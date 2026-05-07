@@ -251,15 +251,18 @@ box-shadow: 0 0 22px rgba(255, 204, 0, 0.18);
 }
 
 .pack-button {
-width: 100%;
-border: none;
-border-radius: 26px;
-padding: 20px 22px;
-color: #000;
-background: linear-gradient(135deg, #ffcc00, #ffdf55);
-font-size: clamp(24px, 7vw, 32px);
-font-weight: 900;
-box-shadow: 0 0 30px rgba(255, 204, 0, 0.25);
+  width: 78%;
+  max-width: 360px;
+  display: block;
+  margin: 18px auto 0;
+  border: 1.5px solid rgba(255, 204, 0, 0.85);
+  border-radius: 18px;
+  padding: 14px 20px;
+  color: #000;
+  background: linear-gradient(135deg, #ffcc00, #ffe680);
+  font-size: clamp(18px, 5vw, 22px);
+  font-weight: 900;
+  box-shadow: 0 0 18px rgba(255, 204, 0, 0.18);
 }
 
 .section-title {
