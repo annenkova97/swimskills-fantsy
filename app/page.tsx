@@ -31,6 +31,7 @@ rarity: "GOAT",
 color: "#f5c542",
 price: 500,
 },
+
 {
 id: "mckeown",
 serial: "AS-002",
@@ -40,6 +41,7 @@ rarity: "GOAT",
 color: "#3fbf6f",
 price: 480,
 },
+
 {
 id: "ledecky",
 serial: "AS-003",
@@ -49,6 +51,7 @@ rarity: "GOAT",
 color: "#4da3ff",
 price: 520,
 },
+
 {
 id: "douglass",
 serial: "AS-004",
@@ -58,15 +61,17 @@ rarity: "Elite",
 color: "#b06cff",
 price: 350,
 },
+
 {
 id: "evans",
 serial: "AS-005",
-name: "Matt Evans",
+name: "Angharad Evans",
 image: "/evans-card.png",
 rarity: "Rare",
 color: "#ff7b54",
 price: 220,
 },
+
 {
 id: "leon",
 serial: "AS-006",
@@ -76,6 +81,7 @@ rarity: "GOAT",
 color: "#4fd1c5",
 price: 550,
 },
+
 {
 id: "steenbergen",
 serial: "AS-007",
@@ -89,11 +95,16 @@ price: 300,
 
 export default function Home() {
 const [balance, setBalance] = useState(1675);
+
 const [collection, setCollection] = useState<CollectionItem[]>([]);
+
 const [activeTab, setActiveTab] = useState("home");
+
+const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
 useEffect(() => {
 const savedCollection = localStorage.getItem("collection");
+
 const savedBalance = localStorage.getItem("balance");
 
 if (savedCollection) {
@@ -107,6 +118,7 @@ setBalance(Number(savedBalance));
 
 useEffect(() => {
 localStorage.setItem("collection", JSON.stringify(collection));
+
 localStorage.setItem("balance", balance.toString());
 }, [collection, balance]);
 
@@ -119,9 +131,7 @@ const existing = prev.find((c) => c.id === randomCard.id);
 
 if (existing) {
 return prev.map((c) =>
-c.id === randomCard.id
-? { ...c, count: c.count + 1 }
-: c
+c.id === randomCard.id ? { ...c, count: c.count + 1 } : c
 );
 }
 
@@ -140,10 +150,11 @@ paddingBottom: "120px",
 >
 <div
 style={{
-padding: "30px 20px",
+padding: "26px 20px 10px",
 display: "flex",
 justifyContent: "space-between",
 alignItems: "center",
+gap: 16,
 }}
 >
 <div>
@@ -151,14 +162,21 @@ alignItems: "center",
 style={{
 color: "#ffcc00",
 margin: 0,
-fontSize: 42,
+fontSize: 36,
 fontWeight: 900,
+lineHeight: 1,
 }}
 >
 Swim Skills
 </h1>
 
-<p style={{ color: "#999", marginTop: 4 }}>
+<p
+style={{
+color: "#999",
+marginTop: 8,
+fontSize: 18,
+}}
+>
 @whoissievers
 </p>
 </div>
@@ -166,14 +184,18 @@ Swim Skills
 <div
 style={{
 border: "2px solid #ffcc00",
-borderRadius: 30,
-padding: "12px 24px",
+borderRadius: 28,
+padding: "10px 20px",
 color: "#ffcc00",
-fontWeight: 800,
-fontSize: 28,
+fontWeight: 900,
+fontSize: 24,
+textAlign: "center",
+minWidth: 110,
 }}
 >
-{balance} SS
+{balance}
+<br />
+SS
 </div>
 </div>
 
@@ -184,7 +206,7 @@ padding: 20,
 display: "flex",
 flexDirection: "column",
 alignItems: "center",
-gap: 40,
+gap: 34,
 }}
 >
 <button
@@ -193,11 +215,13 @@ style={{
 background: "#ffcc00",
 border: "none",
 color: "#000",
-padding: "28px 60px",
-borderRadius: 28,
-fontSize: 34,
+padding: "24px 40px",
+borderRadius: 26,
+fontSize: 30,
 fontWeight: 900,
 cursor: "pointer",
+width: "100%",
+maxWidth: 520,
 }}
 >
 Open Starter Pack
@@ -207,8 +231,8 @@ Open Starter Pack
 <h2
 style={{
 color: "#ffcc00",
-fontSize: 48,
-marginBottom: 20,
+fontSize: 42,
+marginBottom: 18,
 }}
 >
 Your Pack
@@ -216,33 +240,48 @@ Your Pack
 
 <div
 style={{
-display: "grid",
-gridTemplateColumns: "1fr",
-gap: 20,
+display: "flex",
+gap: 16,
+overflowX: "auto",
+paddingBottom: 20,
+scrollSnapType: "x mandatory",
 }}
 >
 {collection.map((card) => (
 <div
 key={card.id}
+onClick={() => setSelectedCard(card)}
 style={{
+minWidth: "240px",
+maxWidth: "240px",
 border: `2px solid ${card.color}`,
 borderRadius: 20,
 overflow: "hidden",
 background: "#111",
+scrollSnapAlign: "start",
+cursor: "pointer",
 }}
 >
 <img
 src={card.image}
+alt={card.name}
 style={{
 width: "100%",
 display: "block",
 }}
 />
 
-<div style={{ padding: 16 }}>
-<h3 style={{ margin: 0 }}>{card.name}</h3>
+<div style={{ padding: 14 }}>
+<h3 style={{ margin: 0, fontSize: 18 }}>
+{card.name}
+</h3>
 
-<p style={{ color: "#999" }}>
+<p
+style={{
+color: "#999",
+marginTop: 8,
+}}
+>
 x{card.count}
 </p>
 </div>
@@ -258,8 +297,8 @@ x{card.count}
 <h2
 style={{
 color: "#ffcc00",
-fontSize: 48,
-marginBottom: 20,
+fontSize: 42,
+marginBottom: 18,
 }}
 >
 MARKET
@@ -267,34 +306,42 @@ MARKET
 
 <div
 style={{
-display: "grid",
-gridTemplateColumns: "1fr",
-gap: 20,
+display: "flex",
+gap: 16,
+overflowX: "auto",
+paddingBottom: 20,
+scrollSnapType: "x mandatory",
 }}
 >
 {marketCards.map((card) => (
 <div
 key={card.id}
+onClick={() => setSelectedCard(card)}
 style={{
+minWidth: "240px",
+maxWidth: "240px",
 background: "#111",
 borderRadius: 20,
 overflow: "hidden",
 border: `2px solid ${card.color}`,
+scrollSnapAlign: "start",
+cursor: "pointer",
 }}
 >
 <img
 src={card.image}
+alt={card.name}
 style={{
 width: "100%",
 display: "block",
 }}
 />
 
-<div style={{ padding: 20 }}>
+<div style={{ padding: 16 }}>
 <h3
 style={{
 margin: 0,
-fontSize: 30,
+fontSize: 20,
 }}
 >
 {card.name}
@@ -303,22 +350,52 @@ fontSize: 30,
 <p
 style={{
 color: card.color,
-fontWeight: 700,
+fontWeight: 800,
+marginTop: 8,
 }}
 >
 {card.rarity}
 </p>
 
 <button
+onClick={(e) => {
+e.stopPropagation();
+
+if (balance < card.price) {
+alert("Not enough SS");
+return;
+}
+
+setBalance((prev) => prev - card.price);
+
+setCollection((prev) => {
+const existing = prev.find(
+(c) => c.id === card.id
+);
+
+if (existing) {
+return prev.map((c) =>
+c.id === card.id
+? {
+...c,
+count: c.count + 1,
+}
+: c
+);
+}
+
+return [...prev, { ...card, count: 1 }];
+});
+}}
 style={{
 width: "100%",
 marginTop: 10,
-padding: 16,
+padding: 12,
 background: "#ffcc00",
 border: "none",
-borderRadius: 16,
-fontWeight: 800,
-fontSize: 22,
+borderRadius: 14,
+fontWeight: 900,
+fontSize: 16,
 cursor: "pointer",
 }}
 >
@@ -336,8 +413,8 @@ BUY — {card.price} SS
 <h2
 style={{
 color: "#ffcc00",
-fontSize: 48,
-marginBottom: 20,
+fontSize: 42,
+marginBottom: 18,
 }}
 >
 COLLECTION
@@ -345,31 +422,82 @@ COLLECTION
 
 <div
 style={{
-display: "grid",
-gridTemplateColumns: "1fr",
-gap: 20,
+display: "flex",
+gap: 16,
+overflowX: "auto",
+paddingBottom: 20,
+scrollSnapType: "x mandatory",
 }}
 >
 {collection.map((card) => (
 <div
 key={card.id}
+onClick={() => setSelectedCard(card)}
 style={{
+minWidth: "240px",
+maxWidth: "240px",
 background: "#111",
 borderRadius: 20,
 overflow: "hidden",
 border: `2px solid ${card.color}`,
+scrollSnapAlign: "start",
+cursor: "pointer",
 }}
 >
 <img
 src={card.image}
+alt={card.name}
 style={{
 width: "100%",
 display: "block",
 }}
 />
+
+<div style={{ padding: 14 }}>
+<h3 style={{ margin: 0, fontSize: 18 }}>
+{card.name}
+</h3>
+
+<p
+style={{
+color: "#999",
+marginTop: 8,
+}}
+>
+x{card.count}
+</p>
+</div>
 </div>
 ))}
 </div>
+</div>
+)}
+
+{selectedCard && (
+<div
+onClick={() => setSelectedCard(null)}
+style={{
+position: "fixed",
+inset: 0,
+background: "rgba(0,0,0,0.92)",
+zIndex: 999,
+display: "flex",
+alignItems: "center",
+justifyContent: "center",
+padding: 20,
+}}
+>
+<img
+src={selectedCard.image}
+alt={selectedCard.name}
+style={{
+width: "92%",
+maxWidth: 420,
+borderRadius: 24,
+border: `3px solid ${selectedCard.color}`,
+boxShadow: `0 0 40px ${selectedCard.color}`,
+}}
+/>
 </div>
 )}
 
@@ -384,6 +512,7 @@ borderTop: "1px solid #222",
 display: "flex",
 justifyContent: "space-around",
 padding: "18px 0",
+zIndex: 100,
 }}
 >
 <button
@@ -391,10 +520,9 @@ onClick={() => setActiveTab("home")}
 style={{
 background: "none",
 border: "none",
-color:
-activeTab === "home" ? "#ffcc00" : "#777",
+color: activeTab === "home" ? "#ffcc00" : "#777",
 fontSize: 24,
-fontWeight: 800,
+fontWeight: 900,
 }}
 >
 HOME
@@ -410,7 +538,7 @@ activeTab === "collection"
 ? "#ffcc00"
 : "#777",
 fontSize: 24,
-fontWeight: 800,
+fontWeight: 900,
 }}
 >
 COLLECTION
@@ -426,7 +554,7 @@ activeTab === "market"
 ? "#ffcc00"
 : "#777",
 fontSize: 24,
-fontWeight: 800,
+fontWeight: 900,
 }}
 >
 MARKET
