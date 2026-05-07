@@ -67,24 +67,6 @@ rarity: "Rare",
 color: "#ff7b54",
 price: 220,
 },
-{
-id: "leon",
-serial: "AS-006",
-name: "Leon Marchand",
-image: "/leon-card.png",
-rarity: "GOAT",
-color: "#4fd1c5",
-price: 550,
-},
-{
-id: "steenbergen",
-serial: "AS-007",
-name: "Marrit Steenbergen",
-image: "/steenbergen-card.png",
-rarity: "Elite",
-color: "#ff66c4",
-price: 300,
-},
 ];
 
 function getSellPrice(rarity: Rarity) {
@@ -162,12 +144,12 @@ const nextRarity = getNextRarity(card.rarity);
 const cost = getUpgradeCost(card.rarity);
 
 if (!nextRarity) {
-alert("This card is already GOAT");
+alert("Already GOAT");
 return;
 }
 
 if (card.count < 2) {
-alert("You need 2 duplicate cards");
+alert("Need 2 duplicates");
 return;
 }
 
@@ -177,7 +159,8 @@ return;
 }
 
 const rewardPool = marketCards.filter((c) => c.rarity === nextRarity);
-const reward = rewardPool[Math.floor(Math.random() * rewardPool.length)];
+const reward =
+rewardPool[Math.floor(Math.random() * rewardPool.length)];
 
 setBalance((prev) => prev - cost);
 
@@ -206,80 +189,79 @@ background: #000;
 
 .app {
 min-height: 100vh;
-min-height: 100dvh;
 background:
-radial-gradient(circle at top, rgba(255, 204, 0, 0.16), transparent 28%),
-linear-gradient(180deg, #050505 0%, #000 100%);
+radial-gradient(circle at top, rgba(255,204,0,0.12), transparent 30%),
+#000;
 color: white;
-padding: calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 92px);
+padding: 20px 14px 110px;
 overflow-x: hidden;
-font-family: Arial, Helvetica, sans-serif;
+font-family: Arial, sans-serif;
 }
 
 .topbar {
 display: flex;
 justify-content: space-between;
 align-items: center;
-gap: 12px;
 margin-bottom: 18px;
 }
 
 .brand-title {
 color: #ffcc00;
-margin: 0;
-font-size: clamp(28px, 8vw, 38px);
+font-size: 38px;
 font-weight: 900;
-line-height: 0.95;
+margin: 0;
+line-height: 0.9;
 }
 
 .username {
-color: #9ca3af;
-margin: 6px 0 0;
+color: #999;
+margin-top: 4px;
 font-size: 15px;
 }
 
 .balance {
 border: 2px solid #ffcc00;
 border-radius: 24px;
-padding: 8px 18px;
+padding: 10px 18px;
 color: #ffcc00;
 font-weight: 900;
-font-size: clamp(18px, 5vw, 24px);
+font-size: 24px;
 text-align: center;
-min-width: 96px;
-box-shadow: 0 0 22px rgba(255, 204, 0, 0.18);
+min-width: 100px;
 }
 
-.pack-button {
-  width: 78%;
-  max-width: 360px;
-  display: block;
-  margin: 18px auto 0;
-  border: 1.5px solid rgba(255, 204, 0, 0.85);
-  border-radius: 18px;
-  padding: 14px 20px;
-  color: #000;
-  background: linear-gradient(135deg, #ffcc00, #ffe680);
-  font-size: clamp(18px, 5vw, 22px);
-  font-weight: 900;
-  box-shadow: 0 0 18px rgba(255, 204, 0, 0.18);
+.pack-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-top: 18px;
+margin-bottom: 14px;
 }
 
 .section-title {
 color: #ffcc00;
-font-size: 24px;
+font-size: 22px;
 font-weight: 900;
-margin: 28px 0 14px;
-letter-spacing: 0.5px;
+margin: 0;
+}
+
+.pack-button {
+border: 1.5px solid rgba(255,204,0,0.85);
+border-radius: 16px;
+padding: 10px 16px;
+background: linear-gradient(135deg, #ffcc00, #ffe680);
+color: #000;
+font-weight: 900;
+font-size: 15px;
+box-shadow: 0 0 16px rgba(255,204,0,0.2);
 }
 
 .scroll-row {
 display: flex;
 gap: 14px;
 overflow-x: auto;
-padding: 4px 2px 18px;
+padding-bottom: 14px;
 scroll-snap-type: x mandatory;
--webkit-overflow-scrolling: touch;
 }
 
 .scroll-row::-webkit-scrollbar {
@@ -287,14 +269,14 @@ display: none;
 }
 
 .card {
-min-width: min(62vw, 245px);
-max-width: min(62vw, 245px);
-background: #101010;
+min-width: 220px;
+max-width: 220px;
+background: #0c0c0c;
 border-radius: 22px;
 overflow: hidden;
 scroll-snap-align: start;
 cursor: pointer;
-box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+box-shadow: 0 10px 24px rgba(0,0,0,0.45);
 }
 
 .card-img {
@@ -308,37 +290,34 @@ padding: 12px;
 
 .card-name {
 margin: 0;
-font-size: 17px;
+font-size: 16px;
 font-weight: 800;
-white-space: nowrap;
-overflow: hidden;
-text-overflow: ellipsis;
 }
 
 .card-meta {
-color: #aaa;
-margin: 7px 0 0;
+color: #999;
+margin-top: 6px;
 font-size: 14px;
 }
 
 .actions {
-display: grid;
-grid-template-columns: 1fr;
+display: flex;
+flex-direction: column;
 gap: 8px;
-margin-top: 10px;
+margin-top: 12px;
 }
 
 .btn {
 width: 100%;
 padding: 10px;
-border-radius: 13px;
+border-radius: 12px;
 font-weight: 900;
-font-size: 13px;
 border: none;
+font-size: 13px;
 }
 
 .btn-gold {
-background: linear-gradient(135deg, #ffcc00, #ffef8a);
+background: linear-gradient(135deg, #ffcc00, #ffe680);
 color: #000;
 }
 
@@ -348,74 +327,64 @@ color: #ffcc00;
 border: 1px solid #ffcc00;
 }
 
+.swipe-hint {
+text-align: center;
+color: rgba(255,204,0,0.55);
+font-size: 12px;
+font-weight: 800;
+letter-spacing: 1px;
+margin-top: -4px;
+margin-bottom: 10px;
+}
+
 .vault {
-border: 1px solid rgba(255, 204, 0, 0.35);
-border-radius: 26px;
+border: 1px solid rgba(255,204,0,0.3);
+border-radius: 24px;
 padding: 18px;
 background:
-linear-gradient(180deg, rgba(255, 204, 0, 0.12), rgba(0,0,0,0.72)),
-#090909;
-box-shadow: 0 0 38px rgba(255, 204, 0, 0.12);
+linear-gradient(180deg, rgba(255,204,0,0.1), rgba(0,0,0,0.85)),
+#080808;
 margin-bottom: 18px;
+box-shadow: 0 0 30px rgba(255,204,0,0.12);
 }
 
 .vault-kicker {
 color: #ffcc00;
-font-size: 12px;
-font-weight: 900;
+font-size: 11px;
 letter-spacing: 3px;
+font-weight: 900;
 margin: 0;
 }
 
 .vault-title {
-margin: 7px 0;
-font-size: 30px;
+margin: 8px 0;
+font-size: 28px;
 font-weight: 900;
 }
 
 .vault-subtitle {
 color: #999;
 margin: 0;
-font-size: 15px;
-}
-
-.modal {
-position: fixed;
-inset: 0;
-z-index: 999;
-background: rgba(0,0,0,0.92);
-display: flex;
-align-items: center;
-justify-content: center;
-padding: 18px;
-}
-
-.modal-img {
-width: min(92vw, 420px);
-max-height: 86dvh;
-object-fit: contain;
-border-radius: 24px;
 }
 
 .bottom-nav {
 position: fixed;
+bottom: 0;
 left: 0;
 right: 0;
-bottom: 0;
-z-index: 100;
-background: rgba(0,0,0,0.96);
+background: rgba(0,0,0,0.95);
 border-top: 1px solid rgba(255,255,255,0.08);
-padding: 13px 10px calc(env(safe-area-inset-bottom) + 13px);
+padding: 14px 10px 30px;
 display: flex;
 justify-content: space-around;
-backdrop-filter: blur(12px);
+backdrop-filter: blur(10px);
 }
 
 .nav-btn {
 background: none;
 border: none;
 color: #777;
-font-size: clamp(17px, 5vw, 22px);
+font-size: 20px;
 font-weight: 900;
 text-transform: uppercase;
 }
@@ -423,12 +392,28 @@ text-transform: uppercase;
 .nav-btn.active {
 color: #ffcc00;
 }
+
+.modal {
+position: fixed;
+inset: 0;
+background: rgba(0,0,0,0.92);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 999;
+padding: 18px;
+}
+
+.modal-img {
+width: min(92vw, 420px);
+border-radius: 24px;
+}
 `}</style>
 
 <div className="topbar">
 <div>
 <h1 className="brand-title">Swim Skills</h1>
-<p className="username">@whoissievers</p>
+<div className="username">@whoissievers</div>
 </div>
 
 <div className="balance">
@@ -440,13 +425,64 @@ SS
 
 {activeTab === "home" && (
 <>
-<button className="pack-button" onClick={openStarterPack}>
-Open Starter Pack
-</button>
-
+<div className="pack-header">
 <h2 className="section-title">Your Pack</h2>
 
-<CardRow cards={collection} setSelectedCard={setSelectedCard} />
+<button className="pack-button" onClick={openStarterPack}>
+Open Pack
+</button>
+</div>
+
+<div className="scroll-row">
+{collection.map((card) => (
+<div
+key={card.id}
+className="card"
+style={{
+border: `2px solid ${card.color}`,
+}}
+onClick={() => setSelectedCard(card)}
+>
+<img
+className="card-img"
+src={card.image}
+alt={card.name}
+/>
+
+<div className="card-body">
+<h3 className="card-name">{card.name}</h3>
+
+<div className="card-meta">x{card.count}</div>
+
+<div className="actions">
+<button
+className="btn btn-gold"
+onClick={(e) => {
+e.stopPropagation();
+upgradeCard(card);
+}}
+>
+Upgrade
+</button>
+
+<button
+className="btn btn-dark"
+onClick={(e) => {
+e.stopPropagation();
+sellCard(card);
+}}
+>
+Sell · {getSellPrice(card.rarity)} SS
+</button>
+</div>
+</div>
+</div>
+))}
+</div>
+
+<div className="swipe-hint">
+← swipe cards →
+</div>
 </>
 )}
 
@@ -454,9 +490,11 @@ Open Starter Pack
 <>
 <div className="vault">
 <p className="vault-kicker">PREMIUM VAULT</p>
+
 <h2 className="vault-title">My Collection</h2>
+
 <p className="vault-subtitle">
-Cards owned: {totalCards} · Unique: {collection.length}
+Cards owned: {totalCards}
 </p>
 </div>
 
@@ -467,38 +505,20 @@ key={card.id}
 className="card"
 style={{
 border: `2px solid ${card.color}`,
-boxShadow: `0 0 24px ${card.color}55`,
 }}
 onClick={() => setSelectedCard(card)}
 >
-<img className="card-img" src={card.image} alt={card.name} />
+<img
+className="card-img"
+src={card.image}
+alt={card.name}
+/>
 
 <div className="card-body">
 <h3 className="card-name">{card.name}</h3>
-<p className="card-meta">
+
+<div className="card-meta">
 {card.rarity} · x{card.count}
-</p>
-
-<div className="actions">
-<button
-className="btn btn-gold"
-onClick={(e) => {
-e.stopPropagation();
-upgradeCard(card);
-}}
->
-UPGRADE
-</button>
-
-<button
-className="btn btn-dark"
-onClick={(e) => {
-e.stopPropagation();
-sellCard(card);
-}}
->
-SELL — {getSellPrice(card.rarity)} SS
-</button>
 </div>
 </div>
 </div>
@@ -516,17 +536,27 @@ SELL — {getSellPrice(card.rarity)} SS
 <div
 key={card.id}
 className="card"
-style={{ border: `2px solid ${card.color}` }}
+style={{
+border: `2px solid ${card.color}`,
+}}
 onClick={() => setSelectedCard(card)}
 >
-<img className="card-img" src={card.image} alt={card.name} />
+<img
+className="card-img"
+src={card.image}
+alt={card.name}
+/>
 
 <div className="card-body">
 <h3 className="card-name">{card.name}</h3>
-<p className="card-meta">{card.rarity}</p>
+
+<div className="card-meta">
+{card.rarity}
+</div>
 
 <button
 className="btn btn-gold"
+style={{ marginTop: 12 }}
 onClick={(e) => {
 e.stopPropagation();
 
@@ -536,10 +566,11 @@ return;
 }
 
 setBalance((prev) => prev - card.price);
+
 addCardToCollection(card);
 }}
 >
-BUY — {card.price} SS
+Buy · {card.price} SS
 </button>
 </div>
 </div>
@@ -549,14 +580,17 @@ BUY — {card.price} SS
 )}
 
 {selectedCard && (
-<div className="modal" onClick={() => setSelectedCard(null)}>
+<div
+className="modal"
+onClick={() => setSelectedCard(null)}
+>
 <img
 className="modal-img"
 src={selectedCard.image}
 alt={selectedCard.name}
 style={{
 border: `3px solid ${selectedCard.color}`,
-boxShadow: `0 0 42px ${selectedCard.color}`,
+boxShadow: `0 0 40px ${selectedCard.color}`,
 }}
 />
 </div>
@@ -567,40 +601,14 @@ boxShadow: `0 0 42px ${selectedCard.color}`,
 <button
 key={tab}
 onClick={() => setActiveTab(tab)}
-className={`nav-btn ${activeTab === tab ? "active" : ""}`}
+className={`nav-btn ${
+activeTab === tab ? "active" : ""
+}`}
 >
 {tab}
 </button>
 ))}
 </div>
-</div>
-);
-}
-
-function CardRow({
-cards,
-setSelectedCard,
-}: {
-cards: CollectionItem[];
-setSelectedCard: (card: Card) => void;
-}) {
-return (
-<div className="scroll-row">
-{cards.map((card) => (
-<div
-key={card.id}
-className="card"
-style={{ border: `2px solid ${card.color}` }}
-onClick={() => setSelectedCard(card)}
->
-<img className="card-img" src={card.image} alt={card.name} />
-
-<div className="card-body">
-<h3 className="card-name">{card.name}</h3>
-<p className="card-meta">x{card.count}</p>
-</div>
-</div>
-))}
 </div>
 );
 }
