@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { initTelegram } from "./telegram";
 
 type Rarity = "Rare" | "Elite" | "GOAT";
 
@@ -22,460 +21,418 @@ type MarketCard = Card & {
 price: number;
 };
 
-type TelegramUser = {
-id?: number;
-username?: string;
-first_name?: string;
-last_name?: string;
-};
-
-const allCards: Card[] = [
-{
-id: "evans",
-serial: "#124/500",
-name: "Angharad Evans",
-image: "/evans-card.png",
-rarity: "Rare",
-color: "border-blue-400",
-},
-{
-id: "steenbergen",
-serial: "#088/500",
-name: "Marrit Steenbergen",
-image: "/steenbergen-card.png",
-rarity: "Rare",
-color: "border-cyan-400",
-},
-{
-id: "douglass",
-serial: "#041/100",
-name: "Kate Douglass",
-image: "/douglass-card.png",
-rarity: "Elite",
-color: "border-purple-400",
-},
-{
-id: "marchand",
-serial: "#03/25",
-name: "Leon Marchand",
-image: "/leon-card.png",
-rarity: "GOAT",
-color: "border-yellow-400",
-},
+const marketCards: MarketCard[] = [
 {
 id: "summer",
-serial: "#01/25",
+serial: "AS-001",
 name: "Summer McIntosh",
 image: "/summer-card.png",
 rarity: "GOAT",
-color: "border-yellow-400",
+color: "#f5c542",
+price: 500,
+},
+{
+id: "mckeown",
+serial: "AS-002",
+name: "Kaylee McKeown",
+image: "/mckeown-card.png",
+rarity: "GOAT",
+color: "#3fbf6f",
+price: 480,
+},
+{
+id: "ledecky",
+serial: "AS-003",
+name: "Katie Ledecky",
+image: "/ledecky-card.png",
+rarity: "GOAT",
+color: "#4da3ff",
+price: 520,
+},
+{
+id: "douglass",
+serial: "AS-004",
+name: "Kate Douglass",
+image: "/douglass-card.png",
+rarity: "Elite",
+color: "#b06cff",
+price: 350,
+},
+{
+id: "evans",
+serial: "AS-005",
+name: "Matt Evans",
+image: "/evans-card.png",
+rarity: "Rare",
+color: "#ff7b54",
+price: 220,
+},
+{
+id: "leon",
+serial: "AS-006",
+name: "Leon Marchand",
+image: "/leon-card.png",
+rarity: "GOAT",
+color: "#4fd1c5",
+price: 550,
+},
+{
+id: "steenbergen",
+serial: "AS-007",
+name: "Marrit Steenbergen",
+image: "/steenbergen-card.png",
+rarity: "Elite",
+color: "#ff66c4",
+price: 300,
 },
 ];
 
-function pickCardByOdds(): Card {
-const roll = Math.random() * 100;
-
-let rarity: Rarity;
-
-if (roll < 60) {
-rarity = "Rare";
-} else if (roll < 90) {
-rarity = "Elite";
-} else {
-rarity = "GOAT";
-}
-
-const pool = allCards.filter((card) => card.rarity === rarity);
-return pool[Math.floor(Math.random() * pool.length)];
-}
-
-function generatePack() {
-const pack: Card[] = [];
-
-for (let i = 0; i < 5; i++) {
-pack.push(pickCardByOdds());
-}
-
-return pack;
-}
-
-function addCardsToCollection(
-currentCollection: CollectionItem[],
-newCards: Card[]
-): CollectionItem[] {
-const updated = [...currentCollection];
-
-newCards.forEach((card) => {
-const existingCard = updated.find((item) => item.id === card.id);
-
-if (existingCard) {
-existingCard.count += 1;
-} else {
-updated.push({ ...card, count: 1 });
-}
-});
-
-return updated;
-}
-
-function getSellPrice(rarity: Rarity) {
-if (rarity === "Rare") return 100;
-if (rarity === "Elite") return 300;
-return 1000;
-}
-
 export default function Home() {
-const [opening, setOpening] = useState(false);
-const [revealing, setRevealing] = useState(false);
-const [packCards, setPackCards] = useState<Card[]>([]);
+const [balance, setBalance] = useState(1675);
 const [collection, setCollection] = useState<CollectionItem[]>([]);
-const [marketCards, setMarketCards] = useState<MarketCard[]>([]);
-const [coins, setCoins] = useState(500);
 const [activeTab, setActiveTab] = useState("home");
-const [telegramUser, setTelegramUser] = useState<TelegramUser | null>(null);
 
 useEffect(() => {
-const tg = initTelegram();
+const savedCollection = localStorage.getItem("collection");
+const savedBalance = localStorage.getItem("balance");
 
-if (tg?.initDataUnsafe?.user) {
-setTelegramUser(tg.initDataUnsafe.user);
+if (savedCollection) {
+setCollection(JSON.parse(savedCollection));
 }
 
-const savedCollection = localStorage.getItem("swimskills_collection");
-const savedCoins = localStorage.getItem("swimskills_coins");
-const savedMarket = localStorage.getItem("swimskills_market");
-
-if (savedCollection) setCollection(JSON.parse(savedCollection));
-if (savedCoins) setCoins(Number(savedCoins));
-if (savedMarket) setMarketCards(JSON.parse(savedMarket));
+if (savedBalance) {
+setBalance(Number(savedBalance));
+}
 }, []);
 
 useEffect(() => {
-localStorage.setItem("swimskills_collection", JSON.stringify(collection));
-}, [collection]);
+localStorage.setItem("collection", JSON.stringify(collection));
+localStorage.setItem("balance", balance.toString());
+}, [collection, balance]);
 
-useEffect(() => {
-localStorage.setItem("swimskills_coins", String(coins));
-}, [coins]);
-
-useEffect(() => {
-localStorage.setItem("swimskills_market", JSON.stringify(marketCards));
-}, [marketCards]);
-
-function openPack() {
-setPackCards([]);
-setOpening(true);
-setRevealing(false);
-
-setTimeout(() => {
-const newPack = generatePack();
-
-setPackCards(newPack);
-setCollection((prev) => addCardsToCollection(prev, newPack));
-setCoins((prev) => prev + 25);
-
-setOpening(false);
-setRevealing(true);
-
-setTimeout(() => {
-setRevealing(false);
-}, 1800);
-}, 2200);
-}
-
-function upgradeCard(card: CollectionItem) {
-let nextRarity: Rarity | null = null;
-let cost = 0;
-
-if (card.rarity === "Rare") {
-nextRarity = "Elite";
-cost = 100;
-} else if (card.rarity === "Elite") {
-nextRarity = "GOAT";
-cost = 300;
-}
-
-if (!nextRarity) return;
-
-if (card.count < 2) {
-alert("Need 2 duplicate cards");
-return;
-}
-
-if (coins < cost) {
-alert("Not enough SS Coins");
-return;
-}
-
-const pool = allCards.filter((c) => c.rarity === nextRarity);
-const reward = pool[Math.floor(Math.random() * pool.length)];
-
-setCoins((prev) => prev - cost);
+const openStarterPack = () => {
+const randomCard =
+marketCards[Math.floor(Math.random() * marketCards.length)];
 
 setCollection((prev) => {
-const updated = prev
-.map((item) => {
-if (item.id === card.id) {
-return { ...item, count: item.count - 2 };
-}
-return item;
-})
-.filter((item) => item.count > 0);
+const existing = prev.find((c) => c.id === randomCard.id);
 
-return addCardsToCollection(updated, [reward]);
-});
-
-alert(`UPGRADED → ${reward.name}`);
-}
-
-function sellCard(card: CollectionItem) {
-const sellPrice = getSellPrice(card.rarity);
-
-setCoins((prev) => prev + sellPrice);
-
-setMarketCards((prev) => [
-...prev,
-{
-...card,
-price: sellPrice,
-},
-]);
-
-setCollection((prev) =>
-prev
-.map((item) => {
-if (item.id === card.id) {
-return { ...item, count: item.count - 1 };
-}
-return item;
-})
-.filter((item) => item.count > 0)
+if (existing) {
+return prev.map((c) =>
+c.id === randomCard.id
+? { ...c, count: c.count + 1 }
+: c
 );
-
-alert(`SOLD → ${card.name} for ${sellPrice} SS`);
 }
 
-function buyCard(card: MarketCard, index: number) {
-if (coins < card.price) {
-alert("Not enough SS Coins");
-return;
-}
-
-setCoins((prev) => prev - card.price);
-setCollection((prev) => addCardsToCollection(prev, [card]));
-setMarketCards((prev) => prev.filter((_, i) => i !== index));
-
-alert(`BOUGHT → ${card.name}`);
-}
+return [...prev, { ...randomCard, count: 1 }];
+});
+};
 
 return (
-<main className="min-h-screen bg-black text-white pb-32 pt-16">
-<div className="fixed top-0 left-0 right-0 z-50 bg-black border-b border-yellow-400/30 px-7 pt-12 pb-4 flex justify-between items-center">
+<div
+style={{
+background: "#000",
+minHeight: "100vh",
+color: "white",
+paddingBottom: "120px",
+}}
+>
+<div
+style={{
+padding: "30px 20px",
+display: "flex",
+justifyContent: "space-between",
+alignItems: "center",
+}}
+>
 <div>
-<h1 className="text-3xl font-black text-yellow-400 leading-none">
+<h1
+style={{
+color: "#ffcc00",
+margin: 0,
+fontSize: 42,
+fontWeight: 900,
+}}
+>
 Swim Skills
 </h1>
 
-<p className="text-sm text-gray-400 mt-2">
-{telegramUser
-? `@${telegramUser.username || telegramUser.first_name}`
-: "Aquatic Stars 2026"}
+<p style={{ color: "#999", marginTop: 4 }}>
+@whoissievers
 </p>
 </div>
 
-<div className="rounded-full border border-yellow-400 px-6 py-3 text-yellow-400 font-black text-lg">
-{coins} SS
+<div
+style={{
+border: "2px solid #ffcc00",
+borderRadius: 30,
+padding: "12px 24px",
+color: "#ffcc00",
+fontWeight: 800,
+fontSize: 28,
+}}
+>
+{balance} SS
 </div>
 </div>
 
 {activeTab === "home" && (
-<div className="px-6 pt-48">
-<div className="flex flex-col items-center justify-center min-h-[48vh]">
-{!opening ? (
+<div
+style={{
+padding: 20,
+display: "flex",
+flexDirection: "column",
+alignItems: "center",
+gap: 40,
+}}
+>
 <button
-onClick={openPack}
-className="bg-yellow-400 text-black px-10 py-6 rounded-2xl text-2xl font-black hover:scale-105 transition shadow-[0_0_40px_rgba(250,204,21,0.4)]"
+onClick={openStarterPack}
+style={{
+background: "#ffcc00",
+border: "none",
+color: "#000",
+padding: "28px 60px",
+borderRadius: 28,
+fontSize: 34,
+fontWeight: 900,
+cursor: "pointer",
+}}
 >
 Open Starter Pack
 </button>
-) : (
-<div className="w-72 h-[420px] rounded-3xl border-4 border-yellow-400 bg-gradient-to-b from-yellow-400 via-yellow-600 to-black shadow-[0_0_90px_rgba(250,204,21,0.95)] flex items-center justify-center animate-pulse">
-<div className="text-center">
-<div className="text-7xl font-black text-black">SS</div>
-<div className="mt-6 text-2xl font-black text-white">
-OPENING...
-</div>
-</div>
-</div>
-)}
-</div>
 
-{revealing && (
-<div className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center">
-<div className="text-center">
-<div className="text-yellow-400 text-5xl font-black animate-pulse">
-PACK OPENED
-</div>
-<div className="mt-4 text-gray-300">
-+25 SS added to your balance
-</div>
-</div>
-</div>
-)}
-
-{packCards.length > 0 && (
-<>
-<h2 className="text-4xl font-black text-yellow-400 mb-8 text-center">
+<div style={{ width: "100%" }}>
+<h2
+style={{
+color: "#ffcc00",
+fontSize: 48,
+marginBottom: 20,
+}}
+>
 Your Pack
 </h2>
 
-<div className="grid grid-cols-2 lg:grid-cols-5 gap-5">
-{packCards.map((card, index) => (
 <div
-key={`${card.id}-${index}`}
-className={`rounded-3xl border-4 ${card.color} overflow-hidden shadow-2xl bg-black animate-[fadeIn_0.6s_ease-in-out]`}
+style={{
+display: "grid",
+gridTemplateColumns: "1fr",
+gap: 20,
+}}
 >
-<img src={card.image} alt={card.name} className="w-full" />
-
-<div className="p-4 bg-black">
-<h3 className="font-bold text-sm">{card.name}</h3>
-<p className="text-xs text-gray-400">{card.serial}</p>
-<p className="text-xs text-yellow-300 font-bold">
-{card.rarity}
-</p>
-</div>
-</div>
-))}
-</div>
-</>
-)}
-</div>
-)}
-
-{activeTab === "collection" && (
-<div className="p-6 pt-48">
-<h2 className="text-4xl font-black text-yellow-400 mb-10 text-center">
-My Collection
-</h2>
-
-{collection.length === 0 ? (
-<p className="text-center text-gray-400">
-Your collection is empty. Open a starter pack first.
-</p>
-) : (
-<div className="grid grid-cols-2 lg:grid-cols-5 gap-5">
 {collection.map((card) => (
 <div
 key={card.id}
-className={`relative rounded-3xl border-4 ${card.color} overflow-hidden shadow-xl bg-black`}
+style={{
+border: `2px solid ${card.color}`,
+borderRadius: 20,
+overflow: "hidden",
+background: "#111",
+}}
 >
-<img src={card.image} alt={card.name} className="w-full" />
+<img
+src={card.image}
+style={{
+width: "100%",
+display: "block",
+}}
+/>
 
-<div className="absolute top-3 right-3 bg-yellow-400 text-black rounded-full px-3 py-1 font-black">
+<div style={{ padding: 16 }}>
+<h3 style={{ margin: 0 }}>{card.name}</h3>
+
+<p style={{ color: "#999" }}>
 x{card.count}
-</div>
-
-<div className="p-4 bg-black">
-<h3 className="font-bold text-sm">{card.name}</h3>
-<p className="text-xs text-gray-400">{card.serial}</p>
-<p className="text-xs text-yellow-300 mb-4 font-bold">
-{card.rarity}
 </p>
-
-{(card.rarity === "Rare" || card.rarity === "Elite") && (
-<button
-onClick={() => upgradeCard(card)}
-className="w-full bg-yellow-400 text-black py-2 rounded-lg font-bold text-sm"
->
-Upgrade
-</button>
-)}
-
-<button
-onClick={() => sellCard(card)}
-className="w-full mt-2 border border-yellow-400 text-yellow-400 py-2 rounded-lg font-bold text-sm"
->
-Sell for {getSellPrice(card.rarity)} SS
-</button>
 </div>
 </div>
 ))}
 </div>
-)}
+</div>
 </div>
 )}
 
 {activeTab === "market" && (
-<div className="p-6 pt-48">
-<h2 className="text-4xl font-black text-yellow-400 mb-10 text-center">
-Marketplace
+<div style={{ padding: 20 }}>
+<h2
+style={{
+color: "#ffcc00",
+fontSize: 48,
+marginBottom: 20,
+}}
+>
+MARKET
 </h2>
 
-{marketCards.length === 0 ? (
-<p className="text-center text-gray-400">No cards listed yet</p>
-) : (
-<div className="grid grid-cols-2 lg:grid-cols-5 gap-5">
-{marketCards.map((card, index) => (
 <div
-key={`${card.id}-${index}`}
-className={`rounded-3xl border-4 ${card.color} overflow-hidden shadow-xl bg-black`}
+style={{
+display: "grid",
+gridTemplateColumns: "1fr",
+gap: 20,
+}}
 >
-<img src={card.image} alt={card.name} className="w-full" />
+{marketCards.map((card) => (
+<div
+key={card.id}
+style={{
+background: "#111",
+borderRadius: 20,
+overflow: "hidden",
+border: `2px solid ${card.color}`,
+}}
+>
+<img
+src={card.image}
+style={{
+width: "100%",
+display: "block",
+}}
+/>
 
-<div className="p-4 bg-black">
-<h3 className="font-bold text-sm">{card.name}</h3>
-<p className="text-xs text-gray-400">{card.serial}</p>
-<p className="text-xs text-yellow-300 mb-4 font-bold">
+<div style={{ padding: 20 }}>
+<h3
+style={{
+margin: 0,
+fontSize: 30,
+}}
+>
+{card.name}
+</h3>
+
+<p
+style={{
+color: card.color,
+fontWeight: 700,
+}}
+>
 {card.rarity}
 </p>
 
-<p className="text-sm text-yellow-400 font-bold mb-4">
-{card.price} SS
-</p>
-
 <button
-onClick={() => buyCard(card, index)}
-className="w-full bg-yellow-400 text-black py-2 rounded-lg font-bold text-sm"
+style={{
+width: "100%",
+marginTop: 10,
+padding: 16,
+background: "#ffcc00",
+border: "none",
+borderRadius: 16,
+fontWeight: 800,
+fontSize: 22,
+cursor: "pointer",
+}}
 >
-Buy
+BUY — {card.price} SS
 </button>
 </div>
 </div>
 ))}
 </div>
-)}
 </div>
 )}
 
-<div className="fixed bottom-0 left-0 right-0 bg-black border-t border-yellow-400/30 p-4 flex justify-around z-50">
+{activeTab === "collection" && (
+<div style={{ padding: 20 }}>
+<h2
+style={{
+color: "#ffcc00",
+fontSize: 48,
+marginBottom: 20,
+}}
+>
+COLLECTION
+</h2>
+
+<div
+style={{
+display: "grid",
+gridTemplateColumns: "1fr",
+gap: 20,
+}}
+>
+{collection.map((card) => (
+<div
+key={card.id}
+style={{
+background: "#111",
+borderRadius: 20,
+overflow: "hidden",
+border: `2px solid ${card.color}`,
+}}
+>
+<img
+src={card.image}
+style={{
+width: "100%",
+display: "block",
+}}
+/>
+</div>
+))}
+</div>
+</div>
+)}
+
+<div
+style={{
+position: "fixed",
+bottom: 0,
+left: 0,
+right: 0,
+background: "#000",
+borderTop: "1px solid #222",
+display: "flex",
+justifyContent: "space-around",
+padding: "18px 0",
+}}
+>
 <button
 onClick={() => setActiveTab("home")}
-className={`font-black ${
-activeTab === "home" ? "text-yellow-400" : "text-gray-500"
-}`}
+style={{
+background: "none",
+border: "none",
+color:
+activeTab === "home" ? "#ffcc00" : "#777",
+fontSize: 24,
+fontWeight: 800,
+}}
 >
 HOME
 </button>
 
 <button
 onClick={() => setActiveTab("collection")}
-className={`font-black ${
-activeTab === "collection" ? "text-yellow-400" : "text-gray-500"
-}`}
+style={{
+background: "none",
+border: "none",
+color:
+activeTab === "collection"
+? "#ffcc00"
+: "#777",
+fontSize: 24,
+fontWeight: 800,
+}}
 >
 COLLECTION
 </button>
 
 <button
 onClick={() => setActiveTab("market")}
-className={`font-black ${
-activeTab === "market" ? "text-yellow-400" : "text-gray-500"
-}`}
+style={{
+background: "none",
+border: "none",
+color:
+activeTab === "market"
+? "#ffcc00"
+: "#777",
+fontSize: 24,
+fontWeight: 800,
+}}
 >
 MARKET
 </button>
 </div>
-</main>
+</div>
 );
 }
 
