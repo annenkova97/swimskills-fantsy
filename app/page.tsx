@@ -190,56 +190,245 @@ prev
 addCardToCollection(reward);
 };
 
-return (
-<div
-style={{
-background:
-"radial-gradient(circle at top, #191200 0%, #050505 38%, #000 100%)",
-minHeight: "100vh",
-color: "white",
-paddingBottom: "120px",
-overflowX: "hidden",
-}}
->
-<div
-style={{
-padding: "26px 20px 10px",
-display: "flex",
-justifyContent: "space-between",
-alignItems: "center",
-gap: 16,
-}}
->
-<div>
-<h1
-style={{
-color: "#ffcc00",
-margin: 0,
-fontSize: 36,
-fontWeight: 900,
-lineHeight: 1,
-}}
->
-Swim Skills
-</h1>
+const totalCards = collection.reduce((sum, c) => sum + c.count, 0);
 
-<p style={{ color: "#999", marginTop: 8, fontSize: 18 }}>
-@whoissievers
-</p>
+return (
+<div className="app">
+<style>{`
+* {
+box-sizing: border-box;
+}
+
+body {
+margin: 0;
+background: #000;
+}
+
+.app {
+min-height: 100vh;
+min-height: 100dvh;
+background:
+radial-gradient(circle at top, rgba(255, 204, 0, 0.16), transparent 28%),
+linear-gradient(180deg, #050505 0%, #000 100%);
+color: white;
+padding: calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 92px);
+overflow-x: hidden;
+font-family: Arial, Helvetica, sans-serif;
+}
+
+.topbar {
+display: flex;
+justify-content: space-between;
+align-items: center;
+gap: 12px;
+margin-bottom: 18px;
+}
+
+.brand-title {
+color: #ffcc00;
+margin: 0;
+font-size: clamp(28px, 8vw, 38px);
+font-weight: 900;
+line-height: 0.95;
+}
+
+.username {
+color: #9ca3af;
+margin: 6px 0 0;
+font-size: 15px;
+}
+
+.balance {
+border: 2px solid #ffcc00;
+border-radius: 24px;
+padding: 8px 18px;
+color: #ffcc00;
+font-weight: 900;
+font-size: clamp(18px, 5vw, 24px);
+text-align: center;
+min-width: 96px;
+box-shadow: 0 0 22px rgba(255, 204, 0, 0.18);
+}
+
+.pack-button {
+width: 100%;
+border: none;
+border-radius: 26px;
+padding: 20px 22px;
+color: #000;
+background: linear-gradient(135deg, #ffcc00, #ffdf55);
+font-size: clamp(24px, 7vw, 32px);
+font-weight: 900;
+box-shadow: 0 0 30px rgba(255, 204, 0, 0.25);
+}
+
+.section-title {
+color: #ffcc00;
+font-size: 24px;
+font-weight: 900;
+margin: 28px 0 14px;
+letter-spacing: 0.5px;
+}
+
+.scroll-row {
+display: flex;
+gap: 14px;
+overflow-x: auto;
+padding: 4px 2px 18px;
+scroll-snap-type: x mandatory;
+-webkit-overflow-scrolling: touch;
+}
+
+.scroll-row::-webkit-scrollbar {
+display: none;
+}
+
+.card {
+min-width: min(62vw, 245px);
+max-width: min(62vw, 245px);
+background: #101010;
+border-radius: 22px;
+overflow: hidden;
+scroll-snap-align: start;
+cursor: pointer;
+box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+.card-img {
+width: 100%;
+display: block;
+}
+
+.card-body {
+padding: 12px;
+}
+
+.card-name {
+margin: 0;
+font-size: 17px;
+font-weight: 800;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+
+.card-meta {
+color: #aaa;
+margin: 7px 0 0;
+font-size: 14px;
+}
+
+.actions {
+display: grid;
+grid-template-columns: 1fr;
+gap: 8px;
+margin-top: 10px;
+}
+
+.btn {
+width: 100%;
+padding: 10px;
+border-radius: 13px;
+font-weight: 900;
+font-size: 13px;
+border: none;
+}
+
+.btn-gold {
+background: linear-gradient(135deg, #ffcc00, #ffef8a);
+color: #000;
+}
+
+.btn-dark {
+background: transparent;
+color: #ffcc00;
+border: 1px solid #ffcc00;
+}
+
+.vault {
+border: 1px solid rgba(255, 204, 0, 0.35);
+border-radius: 26px;
+padding: 18px;
+background:
+linear-gradient(180deg, rgba(255, 204, 0, 0.12), rgba(0,0,0,0.72)),
+#090909;
+box-shadow: 0 0 38px rgba(255, 204, 0, 0.12);
+margin-bottom: 18px;
+}
+
+.vault-kicker {
+color: #ffcc00;
+font-size: 12px;
+font-weight: 900;
+letter-spacing: 3px;
+margin: 0;
+}
+
+.vault-title {
+margin: 7px 0;
+font-size: 30px;
+font-weight: 900;
+}
+
+.vault-subtitle {
+color: #999;
+margin: 0;
+font-size: 15px;
+}
+
+.modal {
+position: fixed;
+inset: 0;
+z-index: 999;
+background: rgba(0,0,0,0.92);
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 18px;
+}
+
+.modal-img {
+width: min(92vw, 420px);
+max-height: 86dvh;
+object-fit: contain;
+border-radius: 24px;
+}
+
+.bottom-nav {
+position: fixed;
+left: 0;
+right: 0;
+bottom: 0;
+z-index: 100;
+background: rgba(0,0,0,0.96);
+border-top: 1px solid rgba(255,255,255,0.08);
+padding: 13px 10px calc(env(safe-area-inset-bottom) + 13px);
+display: flex;
+justify-content: space-around;
+backdrop-filter: blur(12px);
+}
+
+.nav-btn {
+background: none;
+border: none;
+color: #777;
+font-size: clamp(17px, 5vw, 22px);
+font-weight: 900;
+text-transform: uppercase;
+}
+
+.nav-btn.active {
+color: #ffcc00;
+}
+`}</style>
+
+<div className="topbar">
+<div>
+<h1 className="brand-title">Swim Skills</h1>
+<p className="username">@whoissievers</p>
 </div>
 
-<div
-style={{
-border: "2px solid #ffcc00",
-borderRadius: 28,
-padding: "10px 20px",
-color: "#ffcc00",
-fontWeight: 900,
-fontSize: 24,
-textAlign: "center",
-minWidth: 110,
-}}
->
+<div className="balance">
 {balance}
 <br />
 SS
@@ -247,225 +436,94 @@ SS
 </div>
 
 {activeTab === "home" && (
-<div style={{ padding: 20 }}>
-<button
-onClick={openStarterPack}
-style={{
-background: "linear-gradient(135deg, #ffcc00, #ffdf55)",
-border: "none",
-color: "#000",
-padding: "22px 34px",
-borderRadius: 26,
-fontSize: 28,
-fontWeight: 900,
-cursor: "pointer",
-width: "100%",
-boxShadow: "0 0 30px rgba(255,204,0,0.25)",
-}}
->
+<>
+<button className="pack-button" onClick={openStarterPack}>
 Open Starter Pack
 </button>
 
-<h2
-style={{
-color: "#ffcc00",
-fontSize: 30,
-marginTop: 46,
-marginBottom: 18,
-letterSpacing: 1,
-fontWeight: 900,
-}}
->
-Your Pack
-</h2>
+<h2 className="section-title">Your Pack</h2>
 
 <CardRow cards={collection} setSelectedCard={setSelectedCard} />
-</div>
+</>
 )}
 
 {activeTab === "collection" && (
-<div style={{ padding: 20 }}>
-<div
-style={{
-border: "1px solid rgba(255,204,0,0.35)",
-borderRadius: 28,
-padding: 22,
-background:
-"linear-gradient(180deg, rgba(255,204,0,0.12), rgba(0,0,0,0.65))",
-boxShadow: "0 0 40px rgba(255,204,0,0.12)",
-marginBottom: 24,
-}}
->
-<p
-style={{
-color: "#ffcc00",
-fontSize: 14,
-fontWeight: 900,
-letterSpacing: 3,
-margin: 0,
-}}
->
-PREMIUM VAULT
-</p>
-
-<h2
-style={{
-color: "#fff",
-fontSize: 34,
-margin: "8px 0 8px",
-fontWeight: 900,
-}}
->
-My Collection
-</h2>
-
-<p style={{ color: "#999", margin: 0, fontSize: 16 }}>
-Cards owned: {collection.reduce((sum, c) => sum + c.count, 0)} ·
-Unique: {collection.length}
+<>
+<div className="vault">
+<p className="vault-kicker">PREMIUM VAULT</p>
+<h2 className="vault-title">My Collection</h2>
+<p className="vault-subtitle">
+Cards owned: {totalCards} · Unique: {collection.length}
 </p>
 </div>
 
-{collection.length === 0 ? (
-<p style={{ color: "#999", textAlign: "center", marginTop: 80 }}>
-Your collection is empty. Open a starter pack first.
-</p>
-) : (
-<div
-style={{
-display: "flex",
-gap: 16,
-overflowX: "auto",
-paddingBottom: 20,
-scrollSnapType: "x mandatory",
-}}
->
+<div className="scroll-row">
 {collection.map((card) => (
 <div
 key={card.id}
-onClick={() => setSelectedCard(card)}
+className="card"
 style={{
-minWidth: "240px",
-maxWidth: "240px",
-background: "#111",
-borderRadius: 22,
-overflow: "hidden",
 border: `2px solid ${card.color}`,
-scrollSnapAlign: "start",
-cursor: "pointer",
 boxShadow: `0 0 24px ${card.color}55`,
 }}
+onClick={() => setSelectedCard(card)}
 >
-<img
-src={card.image}
-alt={card.name}
-style={{ width: "100%", display: "block" }}
-/>
+<img className="card-img" src={card.image} alt={card.name} />
 
-<div style={{ padding: 14 }}>
-<h3 style={{ margin: 0, fontSize: 18 }}>{card.name}</h3>
-
-<p style={{ color: "#999", marginTop: 8 }}>
+<div className="card-body">
+<h3 className="card-name">{card.name}</h3>
+<p className="card-meta">
 {card.rarity} · x{card.count}
 </p>
 
+<div className="actions">
 <button
+className="btn btn-gold"
 onClick={(e) => {
 e.stopPropagation();
 upgradeCard(card);
-}}
-style={{
-width: "100%",
-padding: 11,
-borderRadius: 14,
-border: "none",
-background:
-card.rarity === "GOAT"
-? "#333"
-: "linear-gradient(135deg,#ffcc00,#ffef8a)",
-color: card.rarity === "GOAT" ? "#777" : "#000",
-fontWeight: 900,
-marginTop: 10,
 }}
 >
 UPGRADE
 </button>
 
 <button
+className="btn btn-dark"
 onClick={(e) => {
 e.stopPropagation();
 sellCard(card);
-}}
-style={{
-width: "100%",
-padding: 11,
-borderRadius: 14,
-background: "transparent",
-border: "1px solid #ffcc00",
-color: "#ffcc00",
-fontWeight: 900,
-marginTop: 8,
 }}
 >
 SELL — {getSellPrice(card.rarity)} SS
 </button>
 </div>
 </div>
+</div>
 ))}
 </div>
-)}
-</div>
+</>
 )}
 
 {activeTab === "market" && (
-<div style={{ padding: 20 }}>
-<h2 style={{ color: "#ffcc00", fontSize: 34, marginBottom: 18 }}>
-Market
-</h2>
+<>
+<h2 className="section-title">Market</h2>
 
-<div
-style={{
-display: "flex",
-gap: 16,
-overflowX: "auto",
-paddingBottom: 20,
-scrollSnapType: "x mandatory",
-}}
->
+<div className="scroll-row">
 {marketCards.map((card) => (
 <div
 key={card.id}
+className="card"
+style={{ border: `2px solid ${card.color}` }}
 onClick={() => setSelectedCard(card)}
-style={{
-minWidth: "240px",
-maxWidth: "240px",
-background: "#111",
-borderRadius: 20,
-overflow: "hidden",
-border: `2px solid ${card.color}`,
-scrollSnapAlign: "start",
-cursor: "pointer",
-}}
 >
-<img
-src={card.image}
-alt={card.name}
-style={{ width: "100%", display: "block" }}
-/>
+<img className="card-img" src={card.image} alt={card.name} />
 
-<div style={{ padding: 16 }}>
-<h3 style={{ margin: 0, fontSize: 20 }}>{card.name}</h3>
-
-<p
-style={{
-color: card.color,
-fontWeight: 800,
-marginTop: 8,
-}}
->
-{card.rarity}
-</p>
+<div className="card-body">
+<h3 className="card-name">{card.name}</h3>
+<p className="card-meta">{card.rarity}</p>
 
 <button
+className="btn btn-gold"
 onClick={(e) => {
 e.stopPropagation();
 
@@ -477,17 +535,6 @@ return;
 setBalance((prev) => prev - card.price);
 addCardToCollection(card);
 }}
-style={{
-width: "100%",
-marginTop: 10,
-padding: 12,
-background: "#ffcc00",
-border: "none",
-borderRadius: 14,
-fontWeight: 900,
-fontSize: 16,
-cursor: "pointer",
-}}
 >
 BUY — {card.price} SS
 </button>
@@ -495,63 +542,29 @@ BUY — {card.price} SS
 </div>
 ))}
 </div>
-</div>
+</>
 )}
 
 {selectedCard && (
-<div
-onClick={() => setSelectedCard(null)}
-style={{
-position: "fixed",
-inset: 0,
-background: "rgba(0,0,0,0.92)",
-zIndex: 999,
-display: "flex",
-alignItems: "center",
-justifyContent: "center",
-padding: 20,
-}}
->
+<div className="modal" onClick={() => setSelectedCard(null)}>
 <img
+className="modal-img"
 src={selectedCard.image}
 alt={selectedCard.name}
 style={{
-width: "92%",
-maxWidth: 420,
-borderRadius: 24,
 border: `3px solid ${selectedCard.color}`,
-boxShadow: `0 0 40px ${selectedCard.color}`,
+boxShadow: `0 0 42px ${selectedCard.color}`,
 }}
 />
 </div>
 )}
 
-<div
-style={{
-position: "fixed",
-bottom: 0,
-left: 0,
-right: 0,
-background: "#000",
-borderTop: "1px solid #222",
-display: "flex",
-justifyContent: "space-around",
-padding: "18px 0",
-zIndex: 100,
-}}
->
+<div className="bottom-nav">
 {["home", "collection", "market"].map((tab) => (
 <button
 key={tab}
 onClick={() => setActiveTab(tab)}
-style={{
-background: "none",
-border: "none",
-color: activeTab === tab ? "#ffcc00" : "#777",
-fontSize: 22,
-fontWeight: 900,
-textTransform: "uppercase",
-}}
+className={`nav-btn ${activeTab === tab ? "active" : ""}`}
 >
 {tab}
 </button>
@@ -569,39 +582,19 @@ cards: CollectionItem[];
 setSelectedCard: (card: Card) => void;
 }) {
 return (
-<div
-style={{
-display: "flex",
-gap: 16,
-overflowX: "auto",
-paddingBottom: 20,
-scrollSnapType: "x mandatory",
-}}
->
+<div className="scroll-row">
 {cards.map((card) => (
 <div
 key={card.id}
+className="card"
+style={{ border: `2px solid ${card.color}` }}
 onClick={() => setSelectedCard(card)}
-style={{
-minWidth: "240px",
-maxWidth: "240px",
-border: `2px solid ${card.color}`,
-borderRadius: 20,
-overflow: "hidden",
-background: "#111",
-scrollSnapAlign: "start",
-cursor: "pointer",
-}}
 >
-<img
-src={card.image}
-alt={card.name}
-style={{ width: "100%", display: "block" }}
-/>
+<img className="card-img" src={card.image} alt={card.name} />
 
-<div style={{ padding: 14 }}>
-<h3 style={{ margin: 0, fontSize: 18 }}>{card.name}</h3>
-<p style={{ color: "#999", marginTop: 8 }}>x{card.count}</p>
+<div className="card-body">
+<h3 className="card-name">{card.name}</h3>
+<p className="card-meta">x{card.count}</p>
 </div>
 </div>
 ))}
