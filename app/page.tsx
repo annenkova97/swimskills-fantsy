@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-type Rarity = "Rare" | "Elite" | "GOAT";
+type Rarity = "Rare" | "Elite" | "GOAT" | "Legend";
 type Tab = "home" | "collection" | "market" | "tournament";
 type Lang = "en" | "ru";
 
@@ -31,6 +31,12 @@ dates: string;
 status: "liveSoon" | "comingSoon";
 prize: string;
 color: string;
+};
+
+type LegendSlot = {
+id: string;
+name: string;
+image?: string;
 };
 
 type TelegramWindow = Window & {
@@ -68,6 +74,7 @@ buy: "Buy",
 sell: "Sell",
 upgrade: "Upgrade",
 alreadyGoat: "Already GOAT",
+alreadyLegend: "Already Legend",
 needDuplicates: "Need 2 duplicates",
 notEnough: "Not enough SS",
 tournamentsTitle: "Fantasy Tournaments",
@@ -79,6 +86,13 @@ liveSoon: "Registration open",
 prizePool: "Prize pool",
 dates: "Dates",
 location: "Location",
+hallOfFameWomen: "Hall of Fame Women",
+hallText:
+"Legend cards are awarded to tournament winners. Add them to the Hall of Fame after receiving them.",
+locked: "Locked",
+addToHall: "Add to Hall of Fame",
+inHall: "In Hall of Fame",
+legendPrize: "Legend prize",
 },
 ru: {
 username: "@whoissievers",
@@ -100,6 +114,7 @@ buy: "Купить",
 sell: "Продать",
 upgrade: "Улучшить",
 alreadyGoat: "Карточка уже GOAT",
+alreadyLegend: "Карточка уже Legend",
 needDuplicates: "Нужно 2 дубликата",
 notEnough: "Недостаточно SS",
 tournamentsTitle: "Фентези-турниры",
@@ -111,6 +126,13 @@ liveSoon: "Регистрация открыта",
 prizePool: "Призовой фонд",
 dates: "Даты",
 location: "Локация",
+hallOfFameWomen: "Зал славы Women",
+hallText:
+"Карточки Legend получают победители турниров. После получения их можно добавить в Зал славы.",
+locked: "Закрыто",
+addToHall: "Добавить в Зал славы",
+inHall: "В Зале славы",
+legendPrize: "Приз Legend",
 },
 };
 
@@ -162,6 +184,24 @@ price: 220,
 },
 ];
 
+const legendWomen: LegendSlot[] = [
+{ id: "missy-franklin", name: "Missy Franklin" },
+{ id: "federica-pellegrini", name: "Federica Pellegrini" },
+{ id: "laure-manaudou", name: "Laure Manaudou" },
+{ id: "rebecca-soni", name: "Rebecca Soni" },
+{ id: "inge-de-bruijn", name: "Inge De Bruijn" },
+{ id: "natalie-coughlin", name: "Natalie Coughlin" },
+{ id: "emma-mckeon", name: "Emma McKeon" },
+{ id: "katinka-hosszu", name: "Katinka Hosszu" },
+{ id: "cate-campbell", name: "Cate Campbell" },
+{ id: "ariarne-titmus", name: "Ariarne Titmus" },
+{ id: "ye-shiwen", name: "Ye Shiwen" },
+{ id: "kirsty-coventry", name: "Kirsty Coventry" },
+{ id: "tatiana-schoenmaker", name: "Tatiana Schoenmaker" },
+{ id: "ranomi-kromowidjojo", name: "Ranomi Kromowidjojo" },
+{ id: "leisel-jones", name: "Leisel Jones" },
+];
+
 const tournaments: Tournament[] = [
 {
 id: "world-cup",
@@ -169,7 +209,7 @@ title: "World Cup Fantasy",
 location: "World Aquatics",
 dates: "October 2026",
 status: "liveSoon",
-prize: "10 000 SS",
+prize: "10 000 SS + Legend Card",
 color: "#ffcc00",
 },
 {
@@ -178,7 +218,7 @@ title: "NCAA Championship",
 location: "USA",
 dates: "March 2026",
 status: "comingSoon",
-prize: "7 500 SS",
+prize: "7 500 SS + Legend Card",
 color: "#4da3ff",
 },
 {
@@ -187,7 +227,7 @@ title: "European Aquatics",
 location: "Europe",
 dates: "Summer 2026",
 status: "comingSoon",
-prize: "5 000 SS",
+prize: "5 000 SS + Legend Card",
 color: "#3fbf6f",
 },
 ];
@@ -195,18 +235,21 @@ color: "#3fbf6f",
 function getSellPrice(rarity: Rarity) {
 if (rarity === "Rare") return 100;
 if (rarity === "Elite") return 300;
-return 700;
+if (rarity === "GOAT") return 700;
+return 2500;
 }
 
 function getUpgradeCost(rarity: Rarity) {
 if (rarity === "Rare") return 150;
 if (rarity === "Elite") return 350;
+if (rarity === "GOAT") return 1200;
 return 0;
 }
 
 function getNextRarity(rarity: Rarity): Rarity | null {
 if (rarity === "Rare") return "Elite";
 if (rarity === "Elite") return "GOAT";
+if (rarity === "GOAT") return "Legend";
 return null;
 }
 
@@ -226,6 +269,7 @@ export default function Home() {
 const [lang, setLang] = useState<Lang>("en");
 const [balance, setBalance] = useState(1675);
 const [collection, setCollection] = useState<CollectionItem[]>([]);
+const [hallOfFame, setHallOfFame] = useState<string[]>([]);
 const [activeTab, setActiveTab] = useState<Tab>("home");
 const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 
@@ -241,15 +285,18 @@ setLang(getTelegramLanguage());
 
 const savedCollection = localStorage.getItem("collection");
 const savedBalance = localStorage.getItem("balance");
+const savedHall = localStorage.getItem("hallOfFameWomen");
 
 if (savedCollection) setCollection(JSON.parse(savedCollection));
 if (savedBalance) setBalance(Number(savedBalance));
+if (savedHall) setHallOfFame(JSON.parse(savedHall));
 }, []);
 
 useEffect(() => {
 localStorage.setItem("collection", JSON.stringify(collection));
 localStorage.setItem("balance", balance.toString());
-}, [collection, balance]);
+localStorage.setItem("hallOfFameWomen", JSON.stringify(hallOfFame));
+}, [collection, balance, hallOfFame]);
 
 const addCardToCollection = (card: Card) => {
 setCollection((prev) => {
@@ -289,7 +336,7 @@ const nextRarity = getNextRarity(card.rarity);
 const cost = getUpgradeCost(card.rarity);
 
 if (!nextRarity) {
-alert(t.alreadyGoat);
+alert(t.alreadyLegend);
 return;
 }
 
@@ -303,9 +350,6 @@ alert(t.notEnough);
 return;
 }
 
-const rewardPool = marketCards.filter((c) => c.rarity === nextRarity);
-const reward = rewardPool[Math.floor(Math.random() * rewardPool.length)];
-
 setBalance((prev) => prev - cost);
 
 setCollection((prev) =>
@@ -314,7 +358,32 @@ prev
 .filter((c) => c.count > 0)
 );
 
+if (nextRarity === "Legend") {
+const randomLegend =
+legendWomen[Math.floor(Math.random() * legendWomen.length)];
+
+addCardToCollection({
+id: randomLegend.id,
+serial: "LEGEND-W",
+name: randomLegend.name,
+image: randomLegend.image || "",
+rarity: "Legend",
+color: "#ffcc00",
+});
+
+return;
+}
+
+const rewardPool = marketCards.filter((c) => c.rarity === nextRarity);
+const reward = rewardPool[Math.floor(Math.random() * rewardPool.length)];
+
 addCardToCollection(reward);
+};
+
+const addToHallOfFame = (legendId: string) => {
+if (hallOfFame.includes(legendId)) return;
+
+setHallOfFame((prev) => [...prev, legendId]);
 };
 
 const totalCards = collection.reduce((sum, c) => sum + c.count, 0);
@@ -428,6 +497,19 @@ width: 100%;
 display: block;
 }
 
+.legend-placeholder {
+height: 285px;
+background:
+radial-gradient(circle at center, rgba(255,204,0,0.12), transparent 45%),
+linear-gradient(180deg, #181818, #050505);
+display: flex;
+align-items: center;
+justify-content: center;
+color: rgba(255,255,255,0.18);
+font-size: 86px;
+font-weight: 900;
+}
+
 .card-body { padding: 12px; }
 
 .card-name {
@@ -482,7 +564,7 @@ margin-top: -2px;
 margin-bottom: 12px;
 }
 
-.vault, .tournament-intro {
+.vault, .tournament-intro, .hall-intro {
 border: 1px solid rgba(255,204,0,0.3);
 border-radius: 24px;
 padding: 18px;
@@ -510,6 +592,67 @@ font-weight: 900;
 .vault-subtitle {
 color: #999;
 margin: 0;
+line-height: 1.45;
+}
+
+.hall-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 12px;
+margin-bottom: 24px;
+}
+
+.hall-slot {
+min-height: 190px;
+border-radius: 22px;
+padding: 14px;
+background:
+radial-gradient(circle at top, rgba(255,204,0,0.12), transparent 40%),
+linear-gradient(180deg, #121212, #050505);
+border: 1px solid rgba(255,204,0,0.28);
+position: relative;
+overflow: hidden;
+}
+
+.hall-slot.locked {
+opacity: 0.72;
+filter: grayscale(0.35);
+}
+
+.hall-silhouette {
+height: 88px;
+margin-bottom: 12px;
+border-radius: 18px;
+background:
+radial-gradient(circle at center, rgba(255,255,255,0.12), transparent 48%),
+#080808;
+display: flex;
+align-items: center;
+justify-content: center;
+color: rgba(255,255,255,0.14);
+font-size: 48px;
+}
+
+.hall-name {
+font-size: 14px;
+line-height: 1.2;
+font-weight: 900;
+color: #fff;
+}
+
+.hall-status {
+margin-top: 8px;
+color: #ffcc00;
+font-size: 11px;
+font-weight: 900;
+}
+
+.lock {
+position: absolute;
+right: 12px;
+top: 12px;
+font-size: 18px;
+opacity: 0.85;
 }
 
 .tournament-list {
@@ -637,6 +780,8 @@ cards={collection}
 setSelectedCard={setSelectedCard}
 sellCard={sellCard}
 upgradeCard={upgradeCard}
+addToHallOfFame={addToHallOfFame}
+hallOfFame={hallOfFame}
 t={t}
 />
 
@@ -661,10 +806,19 @@ cards={collection}
 setSelectedCard={setSelectedCard}
 sellCard={sellCard}
 upgradeCard={upgradeCard}
+addToHallOfFame={addToHallOfFame}
+hallOfFame={hallOfFame}
 t={t}
 />
 
 <div className="swipe-hint">{t.swipeCollection}</div>
+
+<HallOfFameWomen
+collection={collection}
+hallOfFame={hallOfFame}
+addToHallOfFame={addToHallOfFame}
+t={t}
+/>
 </div>
 )}
 
@@ -746,6 +900,8 @@ boxShadow: `0 0 26px ${tour.color}22`,
 🗓 {t.dates}: {tour.dates}
 <br />
 🏆 {t.prizePool}: {tour.prize}
+<br />
+👑 {t.legendPrize}: Hall of Fame Women
 </div>
 
 <button
@@ -760,7 +916,7 @@ onClick={() => alert(t.enterTeam)}
 </div>
 )}
 
-{selectedCard && (
+{selectedCard && selectedCard.image && (
 <div className="modal" onClick={() => setSelectedCard(null)}>
 <img
 className="modal-img"
@@ -816,12 +972,16 @@ cards,
 setSelectedCard,
 sellCard,
 upgradeCard,
+addToHallOfFame,
+hallOfFame,
 t,
 }: {
 cards: CollectionItem[];
 setSelectedCard: (card: Card) => void;
 sellCard: (card: CollectionItem) => void;
 upgradeCard: (card: CollectionItem) => void;
+addToHallOfFame: (legendId: string) => void;
+hallOfFame: string[];
 t: typeof dictionary.en;
 }) {
 return (
@@ -831,9 +991,15 @@ return (
 key={card.id}
 className="card"
 style={{ border: `2px solid ${card.color}` }}
-onClick={() => setSelectedCard(card)}
+onClick={() => {
+if (card.image) setSelectedCard(card);
+}}
 >
+{card.image ? (
 <img className="card-img" src={card.image} alt={card.name} />
+) : (
+<div className="legend-placeholder">★</div>
+)}
 
 <div className="card-body">
 <h3 className="card-name">{card.name}</h3>
@@ -843,6 +1009,17 @@ onClick={() => setSelectedCard(card)}
 </div>
 
 <div className="actions">
+{card.rarity === "Legend" ? (
+<button
+className="btn btn-gold"
+onClick={(e) => {
+e.stopPropagation();
+addToHallOfFame(card.id);
+}}
+>
+{hallOfFame.includes(card.id) ? t.inHall : t.addToHall}
+</button>
+) : (
 <button
 className="btn btn-gold"
 onClick={(e) => {
@@ -852,6 +1029,7 @@ upgradeCard(card);
 >
 {t.upgrade}
 </button>
+)}
 
 <button
 className="btn btn-dark"
@@ -867,6 +1045,67 @@ sellCard(card);
 </div>
 ))}
 </div>
+);
+}
+
+function HallOfFameWomen({
+collection,
+hallOfFame,
+addToHallOfFame,
+t,
+}: {
+collection: CollectionItem[];
+hallOfFame: string[];
+addToHallOfFame: (legendId: string) => void;
+t: typeof dictionary.en;
+}) {
+return (
+<>
+<div className="hall-intro">
+<p className="vault-kicker">LEGEND COLLECTION</p>
+<h2 className="vault-title">{t.hallOfFameWomen}</h2>
+<p className="vault-subtitle">{t.hallText}</p>
+</div>
+
+<div className="hall-grid">
+{legendWomen.map((legend) => {
+const ownedLegend = collection.find(
+(card) => card.id === legend.id && card.rarity === "Legend"
+);
+
+const inHall = hallOfFame.includes(legend.id);
+
+return (
+<div
+key={legend.id}
+className={`hall-slot ${!inHall ? "locked" : ""}`}
+>
+{!inHall && <div className="lock">🔒</div>}
+
+<div className="hall-silhouette">
+{inHall ? "★" : "?"}
+</div>
+
+<div className="hall-name">{legend.name}</div>
+
+<div className="hall-status">
+{inHall ? t.inHall : t.locked}
+</div>
+
+{ownedLegend && !inHall && (
+<button
+className="btn btn-gold"
+style={{ marginTop: 12 }}
+onClick={() => addToHallOfFame(legend.id)}
+>
+{t.addToHall}
+</button>
+)}
+</div>
+);
+})}
+</div>
+</>
 );
 }
 
@@ -895,4 +1134,5 @@ onClick={() => setActiveTab(tab)}
 </button>
 );
 }
+
 
