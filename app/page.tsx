@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 
 type Rarity = "Rare" | "Elite" | "GOAT";
+type Tab = "home" | "collection" | "market" | "tournament";
+type Lang = "en" | "ru";
 
 type Card = {
 id: string;
@@ -21,9 +23,15 @@ type MarketCard = Card & {
 price: number;
 };
 
-type Tab = "home" | "collection" | "market" | "news";
-
-type Lang = "en" | "ru";
+type Tournament = {
+id: string;
+title: string;
+location: string;
+dates: string;
+status: string;
+prize: string;
+color: string;
+};
 
 declare global {
 interface Window {
@@ -55,19 +63,24 @@ myCollection: "My Collection",
 cardsOwned: "Cards owned",
 unique: "Unique",
 market: "Market",
-newsTitle: "Swim Skills News",
-newsText:
-"Latest swimming news, records, NCAA stories and fantasy league updates.",
-openTelegram: "Open Telegram Channel",
 home: "Home",
 collection: "Collection",
-news: "News",
+tournament: "Tournament",
 buy: "Buy",
 sell: "Sell",
 upgrade: "Upgrade",
 alreadyGoat: "Already GOAT",
 needDuplicates: "Need 2 duplicates",
 notEnough: "Not enough SS",
+tournamentsTitle: "Fantasy Tournaments",
+tournamentsText:
+"Choose upcoming competitions, enter with your team and compete in Swim Skills Fantasy League.",
+enterTeam: "Enter with team",
+comingSoon: "Coming soon",
+liveSoon: "Registration open",
+prizePool: "Prize pool",
+dates: "Dates",
+location: "Location",
 },
 ru: {
 username: "@whoissievers",
@@ -82,19 +95,24 @@ myCollection: "Моя коллекция",
 cardsOwned: "Карточек",
 unique: "Уникальных",
 market: "Маркет",
-newsTitle: "Swim Skills News",
-newsText:
-"Новости плавания, рекорды, NCAA, мировые старты и обновления Fantasy League.",
-openTelegram: "Открыть Telegram-канал",
 home: "Главная",
 collection: "Коллекция",
-news: "Новости",
+tournament: "Турнир",
 buy: "Купить",
 sell: "Продать",
 upgrade: "Улучшить",
 alreadyGoat: "Карточка уже GOAT",
 needDuplicates: "Нужно 2 дубликата",
 notEnough: "Недостаточно SS",
+tournamentsTitle: "Фентези-турниры",
+tournamentsText:
+"Выбирай ближайшие соревнования, заявляй свою команду и участвуй в Swim Skills Fantasy League.",
+enterTeam: "Войти командой",
+comingSoon: "Скоро",
+liveSoon: "Регистрация открыта",
+prizePool: "Призовой фонд",
+dates: "Даты",
+location: "Локация",
 },
 };
 
@@ -146,6 +164,36 @@ price: 220,
 },
 ];
 
+const tournaments: Tournament[] = [
+{
+id: "world-cup",
+title: "World Cup Fantasy",
+location: "World Aquatics",
+dates: "October 2026",
+status: "liveSoon",
+prize: "10 000 SS",
+color: "#ffcc00",
+},
+{
+id: "ncaa",
+title: "NCAA Championship",
+location: "USA",
+dates: "March 2026",
+status: "comingSoon",
+prize: "7 500 SS",
+color: "#4da3ff",
+},
+{
+id: "euro",
+title: "European Aquatics",
+location: "Europe",
+dates: "Summer 2026",
+status: "comingSoon",
+prize: "5 000 SS",
+color: "#3fbf6f",
+},
+];
+
 function getSellPrice(rarity: Rarity) {
 if (rarity === "Rare") return 100;
 if (rarity === "Elite") return 300;
@@ -171,7 +219,6 @@ const code =
 window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code || "en";
 
 if (code.startsWith("ru")) return "ru";
-
 return "en";
 }
 
@@ -270,21 +317,11 @@ addCardToCollection(reward);
 
 const totalCards = collection.reduce((sum, c) => sum + c.count, 0);
 
-const openTelegramNews = () => {
-window.open("https://t.me/swimskills", "_blank");
-};
-
 return (
 <div className="app">
 <style>{`
-* {
-box-sizing: border-box;
-}
-
-body {
-margin: 0;
-background: #000;
-}
+* { box-sizing: border-box; }
+body { margin: 0; background: #000; }
 
 .app {
 min-height: 100vh;
@@ -332,9 +369,7 @@ min-width: 100px;
 box-shadow: 0 0 18px rgba(255,204,0,0.15);
 }
 
-.screen {
-width: 100%;
-}
+.screen { width: 100%; }
 
 .pack-header {
 display: flex;
@@ -373,9 +408,7 @@ scroll-snap-type: x mandatory;
 -webkit-overflow-scrolling: touch;
 }
 
-.scroll-row::-webkit-scrollbar {
-display: none;
-}
+.scroll-row::-webkit-scrollbar { display: none; }
 
 .card {
 min-width: 220px;
@@ -393,9 +426,7 @@ width: 100%;
 display: block;
 }
 
-.card-body {
-padding: 12px;
-}
+.card-body { padding: 12px; }
 
 .card-name {
 margin: 0;
@@ -449,7 +480,7 @@ margin-top: -2px;
 margin-bottom: 12px;
 }
 
-.vault {
+.vault, .tournament-intro {
 border: 1px solid rgba(255,204,0,0.3);
 border-radius: 24px;
 padding: 18px;
@@ -479,28 +510,45 @@ color: #999;
 margin: 0;
 }
 
-.news-card {
-border: 1px solid rgba(255,204,0,0.35);
+.tournament-list {
+display: flex;
+flex-direction: column;
+gap: 16px;
+padding-bottom: 20px;
+}
+
+.tournament-card {
 border-radius: 26px;
-padding: 22px;
+padding: 18px;
 background:
-linear-gradient(180deg, rgba(255,204,0,0.12), rgba(0,0,0,0.86)),
+radial-gradient(circle at top right, rgba(255,204,0,0.15), transparent 32%),
 #080808;
-box-shadow: 0 0 32px rgba(255,204,0,0.12);
+border: 1.5px solid rgba(255,204,0,0.28);
+box-shadow: 0 12px 32px rgba(0,0,0,0.5);
 }
 
-.news-title {
+.tournament-status {
+display: inline-block;
+padding: 6px 10px;
+border-radius: 999px;
+background: rgba(255,204,0,0.12);
 color: #ffcc00;
-font-size: 30px;
+font-size: 12px;
 font-weight: 900;
-margin: 0 0 10px;
+margin-bottom: 12px;
 }
 
-.news-text {
+.tournament-title {
+font-size: 24px;
+font-weight: 900;
+margin: 0 0 12px;
+}
+
+.tournament-info {
 color: #aaa;
-font-size: 16px;
-line-height: 1.45;
-margin: 0 0 18px;
+font-size: 14px;
+line-height: 1.55;
+margin-bottom: 16px;
 }
 
 .modal {
@@ -556,9 +604,7 @@ font-size: 22px;
 line-height: 1;
 }
 
-.nav-btn.active {
-color: #ffcc00;
-}
+.nav-btn.active { color: #ffcc00; }
 `}</style>
 
 <div className="topbar">
@@ -638,7 +684,6 @@ onClick={() => setSelectedCard(card)}
 
 <div className="card-body">
 <h3 className="card-name">{card.name}</h3>
-
 <div className="card-meta">{card.rarity}</div>
 
 <button
@@ -667,16 +712,48 @@ addCardToCollection(card);
 </div>
 )}
 
-{activeTab === "news" && (
+{activeTab === "tournament" && (
 <div className="screen">
-<div className="news-card">
-<h2 className="news-title">{t.newsTitle}</h2>
+<div className="tournament-intro">
+<p className="vault-kicker">FANTASY LEAGUE</p>
 
-<p className="news-text">{t.newsText}</p>
+<h2 className="vault-title">{t.tournamentsTitle}</h2>
 
-<button className="pack-button" onClick={openTelegramNews}>
-{t.openTelegram}
+<p className="vault-subtitle">{t.tournamentsText}</p>
+</div>
+
+<div className="tournament-list">
+{tournaments.map((tour) => (
+<div
+key={tour.id}
+className="tournament-card"
+style={{
+borderColor: tour.color,
+boxShadow: `0 0 26px ${tour.color}22`,
+}}
+>
+<div className="tournament-status">
+{tour.status === "liveSoon" ? t.liveSoon : t.comingSoon}
+</div>
+
+<h3 className="tournament-title">{tour.title}</h3>
+
+<div className="tournament-info">
+📍 {t.location}: {tour.location}
+<br />
+🗓 {t.dates}: {tour.dates}
+<br />
+🏆 {t.prizePool}: {tour.prize}
+</div>
+
+<button
+className="btn btn-gold"
+onClick={() => alert(t.enterTeam)}
+>
+{t.enterTeam}
 </button>
+</div>
+))}
 </div>
 </div>
 )}
@@ -721,11 +798,11 @@ label={t.market}
 />
 
 <NavButton
-tab="news"
+tab="tournament"
 activeTab={activeTab}
 setActiveTab={setActiveTab}
-icon="▤"
-label={t.news}
+icon="🏆"
+label={t.tournament}
 />
 </div>
 </div>
