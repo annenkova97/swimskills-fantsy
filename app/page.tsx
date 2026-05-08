@@ -28,13 +28,12 @@ id: string;
 title: string;
 location: string;
 dates: string;
-status: string;
+status: "liveSoon" | "comingSoon";
 prize: string;
 color: string;
 };
 
-declare global {
-interface Window {
+type TelegramWindow = Window & {
 Telegram?: {
 WebApp?: {
 ready?: () => void;
@@ -46,8 +45,7 @@ language_code?: string;
 };
 };
 };
-}
-}
+};
 
 const dictionary = {
 en: {
@@ -215,8 +213,10 @@ return null;
 function getTelegramLanguage(): Lang {
 if (typeof window === "undefined") return "en";
 
+const tgWindow = window as TelegramWindow;
+
 const code =
-window.Telegram?.WebApp?.initDataUnsafe?.user?.language_code || "en";
+tgWindow.Telegram?.WebApp?.initDataUnsafe?.user?.language_code || "en";
 
 if (code.startsWith("ru")) return "ru";
 return "en";
@@ -232,8 +232,10 @@ const [selectedCard, setSelectedCard] = useState<Card | null>(null);
 const t = dictionary[lang];
 
 useEffect(() => {
-window.Telegram?.WebApp?.ready?.();
-window.Telegram?.WebApp?.expand?.();
+const tgWindow = window as TelegramWindow;
+
+tgWindow.Telegram?.WebApp?.ready?.();
+tgWindow.Telegram?.WebApp?.expand?.();
 
 setLang(getTelegramLanguage());
 
