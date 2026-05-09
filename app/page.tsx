@@ -2,27 +2,65 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { dictionary, detectLang, type Lang } from "./lib/i18n";
-import { initTelegram, getTelegram } from "./lib/telegram";
+import { initTelegram, getTelegram, useTelegramMainButton, haptic } from "./lib/telegram";
 import { getActiveTournament, tournaments } from "./lib/tournaments";
 import { loadTeamFor, saveTeam, loadUser, saveUser, type StoredUser } from "./lib/storage";
-import type { Team } from "./lib/types";
+import type { Team, TeamPick } from "./lib/types";
 import { buildLeaderboard } from "./lib/leaderboard";
+import { SLOT_LAYOUT, validateTeam, teamCost } from "./lib/scoring";
 import { BottomNav, type Tab } from "./components/BottomNav";
 import { Topbar } from "./components/Topbar";
 import { TournamentScreen } from "./components/TournamentScreen";
-import { TeamBuilder } from "./components/TeamBuilder";
+import { TeamBuilder, type DraftPicks } from "./components/TeamBuilder";
 import { LeaderboardScreen } from "./components/LeaderboardScreen";
 import { ProfileScreen } from "./components/ProfileScreen";
+import { BottomSheet } from "./components/BottomSheet";
+import { Onboarding } from "./components/Onboarding";
 
 type HydratedState = {
   lang: Lang;
   user: StoredUser;
   team: Team | null;
+  draftPicks: DraftPicks;
+  draftCaptainId: string | null;
+  isSaved: boolean;
+  onboardingDone: boolean;
 };
+
+const ONBOARDING_KEY = "ss-fantasy.onboarding.v2";
+
+function picksFromTeam(team: Team | null): DraftPicks {
+  if (!team) return SLOT_LAYOUT.map(() => null);
+  const result: DraftPicks = SLOT_LAYOUT.map(() => null);
+  team.picks.forEach((p) => {
+    const idx = result.findIndex((r, i) => r === null && SLOT_LAYOUT[i] === p.slot);
+    if (idx >= 0) result[idx] = p;
+  });
+  return result;
+}
+
+function picksToCompact(picks: DraftPicks): TeamPick[] {
+  return picks
+    .map((p, i) => (p ? { swimmerId: p.swimmerId, slot: SLOT_LAYOUT[i] } : null))
+    .filter((p): p is TeamPick => p !== null);
+}
+
+function arePicksEqual(a: DraftPicks, b: DraftPicks): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const ai = a[i];
+    const bi = b[i];
+    if (!ai && !bi) continue;
+    if (!ai || !bi) return false;
+    if (ai.swimmerId !== bi.swimmerId) return false;
+  }
+  return true;
+}
 
 export default function Home() {
   const [hydrated, setHydrated] = useState<HydratedState | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("tournament");
+  const [pendingTab, setPendingTab] = useState<Tab | null>(null);
 
   const tournament = useMemo(() => getActiveTournament(), []);
 
@@ -44,17 +82,28 @@ export default function Home() {
     };
     saveUser(newUser);
 
+    const team = loadTeamFor(tournament.id);
+    const onboardingDone =
+      typeof window !== "undefined" && localStorage.getItem(ONBOARDING_KEY) === "1";
+
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setHydrated({
       lang: newUser.langOverride ?? detectLang(),
       user: newUser,
-      team: loadTeamFor(tournament.id),
+      team,
+      draftPicks: picksFromTeam(team),
+      draftCaptainId: team?.captainId ?? null,
+      isSaved: !!team,
+      onboardingDone,
     });
   }, [tournament.id]);
 
-  const lang: Lang = hydrated?.lang ?? "en";
+  const lang: Lang = hydrated?.lang ?? "ru";
   const user = hydrated?.user ?? null;
   const team = hydrated?.team ?? null;
+  const draftPicks = hydrated?.draftPicks ?? SLOT_LAYOUT.map(() => null);
+  const draftCaptainId = hydrated?.draftCaptainId ?? null;
+  const isSaved = hydrated?.isSaved ?? false;
   const t = dictionary[lang];
 
   const setLang = (next: Lang) => {
@@ -64,9 +113,93 @@ export default function Home() {
     setHydrated({ ...hydrated, lang: next, user: updated });
   };
 
-  const handleLockTeam = (next: Team) => {
+  const setDraftPicks = (next: DraftPicks) => {
+    if (!hydrated) return;
+    setHydrated({ ...hydrated, draftPicks: next, isSaved: false });
+  };
+
+  const setDraftCaptainId = (next: string | null) => {
+    if (!hydrated) return;
+    setHydrated({ ...hydrated, draftCaptainId: next, isSaved: false });
+  };
+
+  const baselinePicks = useMemo(() => picksFromTeam(team), [team]);
+  const isDirty =
+    !arePicksEqual(draftPicks, baselinePicks) || draftCaptainId !== (team?.captainId ?? null);
+
+  const compactPicks = useMemo(() => picksToCompact(draftPicks), [draftPicks]);
+  const cost = useMemo(() => teamCost(compactPicks), [compactPicks]);
+  const errors = useMemo(
+    () => validateTeam(compactPicks, draftCaptainId, tournament.budget),
+    [compactPicks, draftCaptainId, tournament.budget]
+  );
+  const isReady = errors.length === 0;
+
+  const commitDraft = () => {
+    if (!hydrated || !isReady) return;
+    const next: Team = {
+      id: team?.id ?? `team-${Date.now()}`,
+      userId: hydrated.user.id,
+      tournamentId: tournament.id,
+      picks: compactPicks,
+      captainId: draftCaptainId,
+      totalCost: cost,
+      createdAt: team?.createdAt ?? new Date().toISOString(),
+      lockedAt: new Date().toISOString(),
+      transfersUsed: team?.transfersUsed ?? 0,
+    };
     saveTeam(next);
-    if (hydrated) setHydrated({ ...hydrated, team: next });
+    setHydrated({
+      ...hydrated,
+      team: next,
+      draftPicks: picksFromTeam(next),
+      draftCaptainId: next.captainId,
+      isSaved: true,
+    });
+    haptic("heavy");
+  };
+
+  const resetDraft = () => {
+    if (!hydrated) return;
+    setHydrated({
+      ...hydrated,
+      draftPicks: picksFromTeam(team),
+      draftCaptainId: team?.captainId ?? null,
+      isSaved: !!team,
+    });
+  };
+
+  const requestTabChange = (next: Tab) => {
+    if (next === activeTab) return;
+    if (activeTab === "team" && isDirty) {
+      setPendingTab(next);
+      return;
+    }
+    setActiveTab(next);
+  };
+
+  const handleSaveAndLeave = () => {
+    commitDraft();
+    if (pendingTab) {
+      setActiveTab(pendingTab);
+      setPendingTab(null);
+    }
+  };
+
+  const handleDiscardAndLeave = () => {
+    resetDraft();
+    if (pendingTab) {
+      setActiveTab(pendingTab);
+      setPendingTab(null);
+    }
+  };
+
+  const handleStay = () => setPendingTab(null);
+
+  const completeOnboarding = () => {
+    if (!hydrated) return;
+    if (typeof window !== "undefined") localStorage.setItem(ONBOARDING_KEY, "1");
+    setHydrated({ ...hydrated, onboardingDone: true });
   };
 
   const leaderboard = useMemo(
@@ -94,12 +227,22 @@ export default function Home() {
     }
   };
 
+  // Telegram MainButton: only on the team tab, only when team is ready and dirty
+  const mainButtonLabel = isSaved && !isDirty ? t.saved : t.saveAction;
+  const mainButtonHandler =
+    activeTab === "team" && isReady && isDirty ? commitDraft : null;
+  useTelegramMainButton(mainButtonLabel, mainButtonHandler);
+
   if (!hydrated || !user) {
     return (
       <div className="app-shell">
-        <Topbar username="@you" lang="en" setLang={() => {}} />
+        <Topbar username="@you" lang="ru" setLang={() => {}} />
       </div>
     );
+  }
+
+  if (!hydrated.onboardingDone) {
+    return <Onboarding t={t} onDone={completeOnboarding} />;
   }
 
   return (
@@ -120,7 +263,7 @@ export default function Home() {
         <TournamentScreen
           active={tournament}
           team={team}
-          onGoToBuilder={() => setActiveTab("team")}
+          onGoToBuilder={() => requestTabChange("team")}
           t={t}
           rank={rank}
           totalPlayers={totalPlayers}
@@ -130,10 +273,15 @@ export default function Home() {
       {activeTab === "team" && (
         <TeamBuilder
           tournament={tournament}
-          initialTeam={team}
-          onLock={handleLockTeam}
+          picks={draftPicks}
+          setPicks={setDraftPicks}
+          captainId={draftCaptainId}
+          setCaptainId={setDraftCaptainId}
+          isDirty={isDirty}
+          isSaved={isSaved}
+          onSave={commitDraft}
           t={t}
-          userId={user.id}
+          lang={lang}
           locked={false}
         />
       )}
@@ -157,7 +305,33 @@ export default function Home() {
         />
       )}
 
-      <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} t={t} />
+      <BottomNav activeTab={activeTab} setActiveTab={requestTabChange} t={t} />
+
+      {pendingTab && (
+        <BottomSheet
+          title={t.unsavedTitle}
+          text={t.unsavedText}
+          actions={[
+            {
+              key: "save",
+              label: t.saveAndLeave,
+              variant: isReady ? "primary" : "default",
+              onSelect: () => {
+                if (isReady) handleSaveAndLeave();
+                else handleStay();
+              },
+            },
+            {
+              key: "discard",
+              label: t.discardAndLeave,
+              variant: "danger",
+              onSelect: handleDiscardAndLeave,
+            },
+          ]}
+          onClose={handleStay}
+          t={t}
+        />
+      )}
 
       {tournaments.length === 0 && <p className="muted">{t.noActive}</p>}
     </div>

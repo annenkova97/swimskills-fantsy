@@ -1,96 +1,114 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Crown, Plus, Lock } from "lucide-react";
-import type { Dict } from "../lib/i18n";
-import type { Swimmer, TeamPick, Tournament, SlotType, Team } from "../lib/types";
-import { swimmers } from "../lib/swimmers";
+import type { Dict, Lang } from "../lib/i18n";
+import type { Swimmer, TeamPick, Tournament, SlotType } from "../lib/types";
+import { swimmers, getSwimmerName } from "../lib/swimmers";
 import { SLOT_LAYOUT, teamCost, validateTeam, type TeamValidationError } from "../lib/scoring";
 import { SwimmerPicker } from "./SwimmerPicker";
+import { BottomSheet } from "./BottomSheet";
 import { haptic } from "../lib/telegram";
+
+export type DraftPicks = (TeamPick | null)[];
 
 export function TeamBuilder({
   tournament,
-  initialTeam,
-  onLock,
+  picks,
+  setPicks,
+  captainId,
+  setCaptainId,
+  isDirty,
+  isSaved,
+  onSave,
   t,
-  userId,
+  lang,
   locked,
 }: {
   tournament: Tournament;
-  initialTeam: Team | null;
-  onLock: (team: Team) => void;
+  picks: DraftPicks;
+  setPicks: (next: DraftPicks) => void;
+  captainId: string | null;
+  setCaptainId: (next: string | null) => void;
+  isDirty: boolean;
+  isSaved: boolean;
+  onSave: () => void;
   t: Dict;
-  userId: string;
+  lang: Lang;
   locked: boolean;
 }) {
-  const [picks, setPicks] = useState<(TeamPick | null)[]>(() => {
-    if (!initialTeam) return SLOT_LAYOUT.map(() => null);
-    const result: (TeamPick | null)[] = SLOT_LAYOUT.map(() => null);
-    initialTeam.picks.forEach((p) => {
-      const idx = result.findIndex((r, i) => r === null && SLOT_LAYOUT[i] === p.slot);
-      if (idx >= 0) result[idx] = p;
-    });
-    return result;
-  });
-
-  const [captainId, setCaptainId] = useState<string | null>(initialTeam?.captainId ?? null);
   const [pickerSlot, setPickerSlot] = useState<{ index: number; slot: SlotType } | null>(null);
+  const [slotSheet, setSlotSheet] = useState<{ index: number; slot: SlotType } | null>(null);
 
-  const compactPicks: TeamPick[] = useMemo(
-    () =>
-      picks
-        .map((p, i) => (p ? { swimmerId: p.swimmerId, slot: SLOT_LAYOUT[i] } : null))
-        .filter((p): p is TeamPick => p !== null),
-    [picks]
-  );
+  const compactPicks: TeamPick[] = picks
+    .map((p, i) => (p ? { swimmerId: p.swimmerId, slot: SLOT_LAYOUT[i] } : null))
+    .filter((p): p is TeamPick => p !== null);
 
   const cost = teamCost(compactPicks);
   const remaining = tournament.budget - cost;
 
   const errors = validateTeam(compactPicks, captainId, tournament.budget);
+  const filledCount = compactPicks.length;
+  const isFullyFilled = filledCount === SLOT_LAYOUT.length;
+  const baseValidationOk = errors.filter(
+    (e) => e !== "NO_CAPTAIN" && e !== "CAPTAIN_NOT_IN_TEAM"
+  ).length === 0;
+  const captainSelectionMode = isFullyFilled && baseValidationOk && !captainId && !locked;
   const isReady = errors.length === 0;
 
   const setPickAt = (index: number, swimmer: Swimmer) => {
-    setPicks((prev) => {
-      const next = [...prev];
-      next[index] = { swimmerId: swimmer.id, slot: SLOT_LAYOUT[index] };
-      return next;
-    });
+    const next = [...picks];
+    const previous = next[index];
+    next[index] = { swimmerId: swimmer.id, slot: SLOT_LAYOUT[index] };
+    setPicks(next);
+    if (previous && captainId === previous.swimmerId) {
+      setCaptainId(null);
+    }
     haptic("light");
   };
 
   const removeAt = (index: number) => {
-    setPicks((prev) => {
-      const next = [...prev];
-      const removed = next[index];
-      next[index] = null;
-      if (removed && captainId === removed.swimmerId) setCaptainId(null);
-      return next;
-    });
+    const next = [...picks];
+    const removed = next[index];
+    next[index] = null;
+    setPicks(next);
+    if (removed && captainId === removed.swimmerId) setCaptainId(null);
     haptic("light");
   };
 
-  const toggleCaptain = (swimmerId: string) => {
-    setCaptainId((prev) => (prev === swimmerId ? null : swimmerId));
-    haptic("medium");
+  const handleSlotTap = (index: number, slot: SlotType) => {
+    if (locked) return;
+    const pick = picks[index];
+
+    if (!pick) {
+      setPickerSlot({ index, slot });
+      return;
+    }
+
+    if (captainSelectionMode) {
+      setCaptainId(pick.swimmerId);
+      haptic("medium");
+      return;
+    }
+
+    setSlotSheet({ index, slot });
   };
 
-  const handleLock = () => {
-    if (!isReady) return;
-    const team: Team = {
-      id: initialTeam?.id ?? `team-${Date.now()}`,
-      userId,
-      tournamentId: tournament.id,
-      picks: compactPicks,
-      captainId,
-      totalCost: cost,
-      createdAt: initialTeam?.createdAt ?? new Date().toISOString(),
-      lockedAt: new Date().toISOString(),
-      transfersUsed: initialTeam?.transfersUsed ?? 0,
-    };
-    onLock(team);
-    haptic("heavy");
+  const handleSlotReplace = () => {
+    if (!slotSheet) return;
+    setPickerSlot({ index: slotSheet.index, slot: slotSheet.slot });
+    setSlotSheet(null);
+  };
+
+  const handleSlotRemove = () => {
+    if (!slotSheet) return;
+    removeAt(slotSheet.index);
+    setSlotSheet(null);
+  };
+
+  const handleChangeCaptain = () => {
+    setCaptainId(null);
+    haptic("medium");
   };
 
   return (
@@ -105,24 +123,34 @@ export function TeamBuilder({
         <BudgetBar budget={tournament.budget} cost={cost} t={t} />
       </div>
 
-      <div className="team-grid">
+      {captainSelectionMode && (
+        <div className="captain-banner">
+          <div className="captain-banner-emoji">
+            <Crown size={20} />
+          </div>
+          <div>
+            <div className="captain-banner-title">{t.captainModeTitle}</div>
+            <div className="captain-banner-text">{t.captainModeText}</div>
+          </div>
+        </div>
+      )}
+
+      <div className={`team-grid ${captainSelectionMode ? "captain-mode" : ""}`}>
         {SLOT_LAYOUT.map((slot, i) => {
           const pick = picks[i];
           const swimmer = pick ? swimmers.find((s) => s.id === pick.swimmerId) : null;
           const isCaptain = swimmer?.id === captainId;
+          const showPulse = captainSelectionMode && !!swimmer;
 
           return (
-            <div
+            <button
+              type="button"
               key={i}
-              className={`slot ${swimmer ? "filled" : ""} ${i < 3 ? "span-2" : ""}`}
-              onClick={() => {
-                if (locked) return;
-                if (swimmer) {
-                  removeAt(i);
-                } else {
-                  setPickerSlot({ index: i, slot });
-                }
-              }}
+              className={`slot ${swimmer ? "filled" : ""} ${i < 3 ? "span-2" : ""} ${
+                showPulse ? "pulse" : ""
+              } ${isCaptain ? "is-captain" : ""}`}
+              onClick={() => handleSlotTap(i, slot)}
+              disabled={locked && !swimmer}
             >
               <div className="slot-label">
                 {slot === "SPRINT"
@@ -136,50 +164,35 @@ export function TeamBuilder({
 
               {swimmer ? (
                 <>
-                  <div className="slot-name">{swimmer.name}</div>
+                  <div className="slot-name">{getSwimmerName(swimmer, lang)}</div>
 
                   <div className="slot-meta">
                     <span className="swimmer-tag">{swimmer.country}</span>
-                    <span className={`archetype-tag ${swimmer.archetype}`}>{swimmer.archetype}</span>
+                    <span className={`archetype-tag ${swimmer.archetype}`}>
+                      {swimmer.archetype}
+                    </span>
                   </div>
 
                   <div className="slot-price">{swimmer.basePrice} {t.currency}</div>
 
-                  {!locked && (
-                    <button
-                      className="slot-captain"
-                      title={t.setCaptain}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleCaptain(swimmer.id);
-                      }}
-                      style={
-                        isCaptain
-                          ? undefined
-                          : { background: "rgba(255,255,255,0.08)", color: "#888" }
-                      }
-                    >
-                      {isCaptain ? <Crown size={11} /> : "C"}
-                    </button>
-                  )}
-
-                  {locked && isCaptain && (
-                    <div className="slot-captain">
-                      <Crown size={11} />
+                  {isCaptain && (
+                    <div className="slot-captain-badge" title={t.captain}>
+                      <Crown size={12} />
+                      <span>×2</span>
                     </div>
                   )}
                 </>
               ) : (
                 <div className="slot-empty">
-                  <Plus size={24} strokeWidth={2} />
+                  <Plus size={28} strokeWidth={2} />
                 </div>
               )}
-            </div>
+            </button>
           );
         })}
       </div>
 
-      {!locked && (
+      {!locked && !captainSelectionMode && (
         <>
           {errors.length > 0 && (
             <ul className="errors-list">
@@ -189,10 +202,32 @@ export function TeamBuilder({
             </ul>
           )}
 
-          {isReady && <p className="success-msg">{t.teamComplete}</p>}
+          {isReady && !isDirty && isSaved && (
+            <p className="success-msg">{t.saved}</p>
+          )}
 
-          <button className="btn btn-gold" disabled={!isReady} onClick={handleLock}>
-            {initialTeam?.lockedAt ? t.save : t.submit}
+          {captainId && (
+            <button
+              type="button"
+              className="btn btn-ghost"
+              onClick={handleChangeCaptain}
+              style={{ marginBottom: 10 }}
+            >
+              <Crown size={14} style={{ verticalAlign: "middle", marginRight: 6 }} />
+              {t.captainModeChange}
+            </button>
+          )}
+
+          <button
+            className="btn btn-gold"
+            disabled={!isReady || !isDirty}
+            onClick={() => {
+              if (!isReady || !isDirty) return;
+              onSave();
+              haptic("heavy");
+            }}
+          >
+            {!isDirty && isSaved ? t.saved : t.saveAction}
           </button>
         </>
       )}
@@ -212,12 +247,43 @@ export function TeamBuilder({
             setPickerSlot(null);
           }}
           onClose={() => setPickerSlot(null)}
-          selectedIds={compactPicks.map((p) => p.swimmerId)}
-          remainingBudget={remaining}
+          selectedIds={compactPicks
+            .filter((_, i) => i !== pickerSlot.index)
+            .map((p) => p.swimmerId)}
+          remainingBudget={
+            picks[pickerSlot.index]
+              ? remaining + (swimmers.find((s) => s.id === picks[pickerSlot.index]!.swimmerId)?.basePrice ?? 0)
+              : remaining
+          }
           participantIds={tournament.participantSwimmerIds}
+          currentPickId={picks[pickerSlot.index]?.swimmerId ?? null}
+          t={t}
+          lang={lang}
+        />
+      )}
+
+      {slotSheet && (
+        <BottomSheet
+          title={t.slotActionTitle}
+          actions={[
+            {
+              key: "replace",
+              label: t.slotActionReplace,
+              variant: "primary",
+              onSelect: handleSlotReplace,
+            },
+            {
+              key: "remove",
+              label: t.slotActionRemove,
+              variant: "danger",
+              onSelect: handleSlotRemove,
+            },
+          ]}
+          onClose={() => setSlotSheet(null)}
           t={t}
         />
       )}
+
     </div>
   );
 }

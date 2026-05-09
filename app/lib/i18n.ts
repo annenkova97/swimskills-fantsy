@@ -17,6 +17,8 @@ type DictShape = {
   setCaptain: string;
   captainSet: string;
   submit: string;
+  saveAction: string;
+  saved: string;
   teamLocked: string;
   edit: string;
   save: string;
@@ -101,13 +103,38 @@ type DictShape = {
   captainBadge: string;
   male: string;
   female: string;
+  // new
+  pickThisCard: string;
+  current: string;
+  swipeHint: string;
+  slotActionTitle: string;
+  slotActionReplace: string;
+  slotActionRemove: string;
+  unsavedTitle: string;
+  unsavedText: string;
+  saveAndLeave: string;
+  discardAndLeave: string;
+  stayHere: string;
+  captainModeTitle: string;
+  captainModeText: string;
+  captainModeChange: string;
+  pickCaptainHint: string;
+  // onboarding
+  onb1Title: string;
+  onb1Text: string;
+  onb2Title: string;
+  onb2Text: string;
+  onb3Title: string;
+  onb3Text: string;
+  onbStart: string;
+  onbSkip: string;
 };
 
 export const dictionary: Record<Lang, DictShape> = {
   en: {
     appName: "Swim Skills Fantasy",
     currency: "SS",
-    yourTeam: "Your Team",
+    yourTeam: "Team",
     tournament: "Tournament",
     leaderboard: "Leaderboard",
     catalog: "Catalog",
@@ -120,7 +147,9 @@ export const dictionary: Record<Lang, DictShape> = {
     captainHint: "×2 points",
     setCaptain: "Set captain",
     captainSet: "Captain ✓",
-    submit: "Lock team",
+    submit: "Save team",
+    saveAction: "Save",
+    saved: "Saved ✓",
     teamLocked: "Team locked",
     edit: "Edit",
     save: "Save",
@@ -159,7 +188,7 @@ export const dictionary: Record<Lang, DictShape> = {
     score: "Score",
     you: "You",
     total: "Total",
-    pickGuide: "Pick to add → tap to remove",
+    pickGuide: "Swipe cards · tap to pick",
     filterAll: "All",
     filterSprint: "Sprint",
     filterDistance: "Distance",
@@ -207,6 +236,29 @@ export const dictionary: Record<Lang, DictShape> = {
     captainBadge: "C",
     male: "M",
     female: "W",
+    pickThisCard: "Tap card to pick",
+    current: "Current pick",
+    swipeHint: "← swipe cards →",
+    slotActionTitle: "Slot action",
+    slotActionReplace: "Replace swimmer",
+    slotActionRemove: "Remove from team",
+    unsavedTitle: "Unsaved changes",
+    unsavedText: "You have unsaved changes to your team.",
+    saveAndLeave: "Save",
+    discardAndLeave: "Discard",
+    stayHere: "Stay",
+    captainModeTitle: "Pick your captain",
+    captainModeText: "Their points double (×2). Tap any swimmer.",
+    captainModeChange: "Change captain",
+    pickCaptainHint: "Tap a swimmer to make captain",
+    onb1Title: "Build your team",
+    onb1Text: "Pick 7 swimmers within a 1000 SS budget. Mix sprinters, distance and universal.",
+    onb2Title: "Pick a captain",
+    onb2Text: "Your captain scores ×2 fantasy points. Choose wisely.",
+    onb3Title: "Real-world scoring",
+    onb3Text: "Your team scores from real World Aquatics meets. Climb the leaderboard.",
+    onbStart: "Start playing",
+    onbSkip: "Skip",
   },
   ru: {
     appName: "Swim Skills Fantasy",
@@ -224,7 +276,9 @@ export const dictionary: Record<Lang, DictShape> = {
     captainHint: "×2 очки",
     setCaptain: "Назначить",
     captainSet: "Капитан ✓",
-    submit: "Закрепить команду",
+    submit: "Сохранить команду",
+    saveAction: "Сохранить",
+    saved: "Сохранено ✓",
     teamLocked: "Команда закреплена",
     edit: "Изменить",
     save: "Сохранить",
@@ -263,7 +317,7 @@ export const dictionary: Record<Lang, DictShape> = {
     score: "Очки",
     you: "Ты",
     total: "Итого",
-    pickGuide: "Тапни, чтобы добавить или убрать",
+    pickGuide: "Свайпай карточки · тапни чтобы выбрать",
     filterAll: "Все",
     filterSprint: "Спринт",
     filterDistance: "Стайер",
@@ -287,7 +341,7 @@ export const dictionary: Record<Lang, DictShape> = {
     errUniversal: "В слот UNIVERSAL — только универсал",
     errCaptain: "Назначь капитана",
     errCount: "Нужно ровно 7 пловцов",
-    welcome: "Welcome to Swim Skills Fantasy",
+    welcome: "Swim Skills Fantasy",
     welcomeText:
       "Собери команду из 7 пловцов в бюджет 1000 SS, назначь капитана и поднимайся в таблице по реальным результатам с турниров World Aquatics.",
     start: "Начать",
@@ -311,16 +365,39 @@ export const dictionary: Record<Lang, DictShape> = {
     captainBadge: "C",
     male: "М",
     female: "Ж",
+    pickThisCard: "Тапни карточку чтобы выбрать",
+    current: "Текущий выбор",
+    swipeHint: "← свайпай карточки →",
+    slotActionTitle: "Что делаем со слотом?",
+    slotActionReplace: "Заменить пловца",
+    slotActionRemove: "Убрать из команды",
+    unsavedTitle: "Несохранённые изменения",
+    unsavedText: "Изменения в команде ещё не сохранены.",
+    saveAndLeave: "Сохранить",
+    discardAndLeave: "Сбросить",
+    stayHere: "Остаться",
+    captainModeTitle: "Выбери капитана",
+    captainModeText: "Его очки удваиваются (×2). Тапни любого пловца.",
+    captainModeChange: "Сменить капитана",
+    pickCaptainHint: "Тапни пловца, чтобы сделать капитаном",
+    onb1Title: "Собери команду",
+    onb1Text: "Выбери 7 пловцов в бюджет 1000 SS. Микс спринтеров, стайеров и универсалов.",
+    onb2Title: "Назначь капитана",
+    onb2Text: "Очки капитана удваиваются (×2). Выбирай с умом.",
+    onb3Title: "Реальный скоринг",
+    onb3Text: "Очки начисляются по реальным результатам World Aquatics. Поднимайся в таблице.",
+    onbStart: "Начать игру",
+    onbSkip: "Пропустить",
   },
 };
 
 export type Dict = DictShape;
 
 export function detectLang(): Lang {
-  if (typeof window === "undefined") return "en";
+  if (typeof window === "undefined") return "ru";
   const tg = (window as unknown as {
     Telegram?: { WebApp?: { initDataUnsafe?: { user?: { language_code?: string } } } };
   }).Telegram;
-  const code = tg?.WebApp?.initDataUnsafe?.user?.language_code ?? navigator.language ?? "en";
-  return code.toLowerCase().startsWith("ru") ? "ru" : "en";
+  const code = tg?.WebApp?.initDataUnsafe?.user?.language_code ?? navigator.language ?? "ru";
+  return code.toLowerCase().startsWith("en") ? "en" : "ru";
 }

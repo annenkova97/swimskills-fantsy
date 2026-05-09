@@ -20,6 +20,7 @@ export type Attributes = {
 export type Swimmer = {
   id: string;
   name: string;
+  nameRu: string;
   country: string;
   gender: Gender;
   archetype: Archetype;

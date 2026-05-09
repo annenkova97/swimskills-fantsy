@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { X } from "lucide-react";
-import type { Dict } from "../lib/i18n";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { X, AlertTriangle } from "lucide-react";
+import type { Dict, Lang } from "../lib/i18n";
 import type { SlotType, Swimmer } from "../lib/types";
-import { swimmers } from "../lib/swimmers";
+import { swimmers, getSwimmerName } from "../lib/swimmers";
+import { PremiumCard } from "./PremiumCard";
+import { haptic, useTelegramBackButton } from "../lib/telegram";
 
 type Filter = "ALL" | "SPRINT" | "DISTANCE" | "UNIVERSAL" | "F" | "M";
 
@@ -15,7 +17,9 @@ export function SwimmerPicker({
   selectedIds,
   remainingBudget,
   participantIds,
+  currentPickId,
   t,
+  lang,
 }: {
   slot: SlotType;
   onPick: (swimmer: Swimmer) => void;
@@ -23,9 +27,15 @@ export function SwimmerPicker({
   selectedIds: string[];
   remainingBudget: number;
   participantIds: string[];
+  currentPickId?: string | null;
   t: Dict;
+  lang: Lang;
 }) {
   const [filter, setFilter] = useState<Filter>("ALL");
+  const [activeIdx, setActiveIdx] = useState(0);
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+
+  useTelegramBackButton(onClose);
 
   const filtered = useMemo(() => {
     const inTournament = swimmers.filter((s) => participantIds.includes(s.id));
@@ -40,8 +50,33 @@ export function SwimmerPicker({
     if (filter === "F") pool = pool.filter((s) => s.gender === "F");
     if (filter === "M") pool = pool.filter((s) => s.gender === "M");
 
-    return [...pool].sort((a, b) => b.basePrice - a.basePrice);
-  }, [filter, slot, participantIds]);
+    const sorted = [...pool].sort((a, b) => b.basePrice - a.basePrice);
+
+    if (currentPickId) {
+      const idx = sorted.findIndex((s) => s.id === currentPickId);
+      if (idx > 0) {
+        const [current] = sorted.splice(idx, 1);
+        sorted.unshift(current);
+      }
+    }
+
+    return sorted;
+  }, [filter, slot, participantIds, currentPickId]);
+
+  useEffect(() => {
+    scrollerRef.current?.scrollTo({ left: 0, behavior: "auto" });
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setActiveIdx(0);
+  }, [filter]);
+
+  const onScroll = () => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const cardWidth = el.querySelector<HTMLElement>(".picker-slide")?.offsetWidth ?? 1;
+    const gap = 14;
+    const idx = Math.round(el.scrollLeft / (cardWidth + gap));
+    if (idx !== activeIdx) setActiveIdx(idx);
+  };
 
   const slotTitle =
     slot === "SPRINT"
@@ -54,87 +89,105 @@ export function SwimmerPicker({
 
   const showFilters = slot === "WILDCARD";
 
+  const tryPick = (s: Swimmer) => {
+    if (s.id === currentPickId) {
+      onClose();
+      return;
+    }
+    if (selectedIds.includes(s.id)) return;
+    if (s.basePrice > remainingBudget && s.id !== currentPickId) return;
+    haptic("medium");
+    onPick(s);
+  };
+
   return (
-    <div className="modal-backdrop">
+    <div className="modal-backdrop picker">
       <div className="modal-header">
-        <h3 className="modal-title">
-          {t.chooseSwimmer} · {slotTitle}
-        </h3>
+        <div>
+          <h3 className="modal-title">{slotTitle}</h3>
+          <div className="picker-count">
+            {filtered.length > 0 ? `${activeIdx + 1} / ${filtered.length}` : "—"}
+          </div>
+        </div>
 
         <button className="modal-close" onClick={onClose} aria-label="Close">
-          <X size={20} />
+          <X size={22} />
         </button>
       </div>
 
-      <div className="modal-body">
-        {showFilters && (
-          <div className="filter-row">
-            {(
-              [
-                ["ALL", t.filterAll],
-                ["SPRINT", t.filterSprint],
-                ["DISTANCE", t.filterDistance],
-                ["UNIVERSAL", t.filterUniversal],
-                ["F", t.filterWomen],
-                ["M", t.filterMen],
-              ] as const
-            ).map(([key, label]) => (
-              <button
-                key={key}
-                className={`filter-chip ${filter === key ? "active" : ""}`}
-                onClick={() => setFilter(key)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {filtered.map((s) => {
-          const isSelected = selectedIds.includes(s.id);
-          const overBudget = !isSelected && s.basePrice > remainingBudget;
-          return (
+      {showFilters && (
+        <div className="filter-row picker-filters">
+          {(
+            [
+              ["ALL", t.filterAll],
+              ["SPRINT", t.filterSprint],
+              ["DISTANCE", t.filterDistance],
+              ["UNIVERSAL", t.filterUniversal],
+              ["F", t.filterWomen],
+              ["M", t.filterMen],
+            ] as const
+          ).map(([key, label]) => (
             <button
-              key={s.id}
-              className={`swimmer-row ${isSelected ? "selected" : ""} ${
-                overBudget ? "disabled" : ""
-              }`}
-              onClick={() => {
-                if (isSelected) return;
-                if (overBudget) return;
-                onPick(s);
-              }}
-              style={{ width: "100%", textAlign: "left", border: "1px solid transparent" }}
+              key={key}
+              className={`filter-chip ${filter === key ? "active" : ""}`}
+              onClick={() => setFilter(key)}
             >
-              <div className="swimmer-avatar">{initials(s.name)}</div>
-
-              <div className="swimmer-info">
-                <p className="swimmer-name">{s.name}</p>
-
-                <div className="swimmer-meta">
-                  <span className="swimmer-tag">{s.country}</span>
-                  <span className="swimmer-tag">{s.gender === "F" ? t.female : t.male}</span>
-                  <span className={`archetype-tag ${s.archetype}`}>{s.archetype}</span>
-                  <span className="swimmer-tag gold">OVR {s.ovr}</span>
-                </div>
-              </div>
-
-              <div className="swimmer-price">
-                {s.basePrice}
-                <br />
-                <span style={{ fontSize: 10, color: "#aaa" }}>{t.currency}</span>
-              </div>
+              {label}
             </button>
-          );
-        })}
+          ))}
+        </div>
+      )}
 
-        {filtered.length === 0 && <p className="muted">—</p>}
-      </div>
+      {filtered.length === 0 ? (
+        <div className="picker-empty">—</div>
+      ) : (
+        <>
+          <div className="picker-scroller" ref={scrollerRef} onScroll={onScroll}>
+            {filtered.map((s) => {
+              const isCurrent = s.id === currentPickId;
+              const isSelectedElsewhere = !isCurrent && selectedIds.includes(s.id);
+              const overBudget = !isCurrent && s.basePrice > remainingBudget;
+              const disabled = isSelectedElsewhere || overBudget;
+
+              return (
+                <div className="picker-slide" key={s.id}>
+                  <button
+                    className={`picker-card-btn ${isCurrent ? "current" : ""} ${disabled ? "disabled" : ""}`}
+                    onClick={() => tryPick(s)}
+                    aria-label={`Pick ${s.name}`}
+                  >
+                    <PremiumCard swimmer={s} lang={lang} />
+
+                    {isCurrent && (
+                      <span className="picker-current-badge">{t.current}</span>
+                    )}
+                    {isSelectedElsewhere && (
+                      <span className="picker-overlay">{t.selected}</span>
+                    )}
+                    {overBudget && !isSelectedElsewhere && (
+                      <span className="picker-overlay over-budget">
+                        <AlertTriangle size={14} /> {t.errBudget}
+                      </span>
+                    )}
+                  </button>
+
+                  <div className="picker-meta">
+                    <div className="picker-name">{getSwimmerName(s, lang)}</div>
+                    <div className="picker-price">
+                      {s.basePrice} <span>{t.currency}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="picker-footer">
+            <span className="picker-hint">{t.swipeHint}</span>
+            <span className="picker-pick-hint">{t.pickThisCard}</span>
+          </div>
+        </>
+      )}
     </div>
   );
-}
-
-function initials(name: string): string {
-  const parts = name.split(/\s+/);
-  return (parts[0]?.[0] ?? "") + (parts[parts.length - 1]?.[0] ?? "");
 }

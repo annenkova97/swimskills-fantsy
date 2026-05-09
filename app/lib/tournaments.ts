@@ -90,12 +90,20 @@ export function getSimulatedResults(tournamentId: string): EventResult[] {
     eligible.forEach((entry, idx) => {
       const place = idx + 1;
       const waPoints = Math.round(entry.score * 9.5);
-      const bonusPoints =
-        place === 1 ? 30 : place === 2 ? 20 : place === 3 ? 10 : 0;
+      // Bonuses per brief: gold +50, silver +30, bronze +20
+      const medalBonus =
+        place === 1 ? 50 : place === 2 ? 30 : place === 3 ? 20 : 0;
       const isPB = rand() < 0.18;
-      const pbBonus = isPB ? 15 : 0;
+      const pbBonus = isPB ? 10 : 0;
+      // Records: WR +100, continental ER +50, national NR +25
       const isWR = place === 1 && rand() < 0.04;
-      const wrBonus = isWR ? 50 : 0;
+      const wrBonus = isWR ? 100 : 0;
+      const isER = !isWR && place === 1 && rand() < 0.08;
+      const erBonus = isER ? 50 : 0;
+      const isNR = !isWR && !isER && place <= 3 && rand() < 0.1;
+      const nrBonus = isNR ? 25 : 0;
+
+      const bonusPoints = medalBonus + pbBonus + wrBonus + erBonus + nrBonus;
 
       results.push({
         swimmerId: entry.swimmer.id,
@@ -103,8 +111,8 @@ export function getSimulatedResults(tournamentId: string): EventResult[] {
         place,
         time: formatPlaceholderTime(event, place),
         waPoints,
-        bonusPoints: bonusPoints + pbBonus + wrBonus,
-        totalFp: waPoints + bonusPoints + pbBonus + wrBonus,
+        bonusPoints,
+        totalFp: waPoints + bonusPoints,
       });
     });
   }

@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Share2, Trophy, Crown } from "lucide-react";
 import type { Dict, Lang } from "../lib/i18n";
 import type { Team, Tournament } from "../lib/types";
-import { swimmers } from "../lib/swimmers";
+import { swimmers, getSwimmerName } from "../lib/swimmers";
 import { scoreTeam } from "../lib/scoring";
 
 export function ProfileScreen({
@@ -31,6 +31,7 @@ export function ProfileScreen({
   onShare: () => void;
 }) {
   const score = team ? scoreTeam(team, tournament) : null;
+  const monogram = monogramOf(username);
 
   return (
     <div>
@@ -47,7 +48,7 @@ export function ProfileScreen({
             />
           </div>
         ) : (
-          <div className="profile-avatar">{(username[0] ?? "S").toUpperCase()}</div>
+          <div className="profile-avatar">{monogram}</div>
         )}
 
         <div style={{ flex: 1 }}>
@@ -92,7 +93,7 @@ export function ProfileScreen({
                 </div>
 
                 <div className="swimmer-info">
-                  <p className="swimmer-name">{swimmer.name}</p>
+                  <p className="swimmer-name">{getSwimmerName(swimmer, lang)}</p>
 
                   <div className="swimmer-meta">
                     <span className="swimmer-tag">{swimmer.country}</span>
@@ -128,4 +129,9 @@ export function ProfileScreen({
 function initials(name: string): string {
   const parts = name.split(/\s+/);
   return (parts[0]?.[0] ?? "") + (parts[parts.length - 1]?.[0] ?? "");
+}
+
+function monogramOf(username: string): string {
+  const cleaned = username.replace(/^@/, "").trim();
+  return (cleaned[0] ?? "S").toUpperCase();
 }

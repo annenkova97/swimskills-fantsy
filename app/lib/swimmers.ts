@@ -4,6 +4,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "leon-marchand",
     name: "Léon Marchand",
+    nameRu: "Леон Маршан",
     country: "FRA",
     gender: "M",
     archetype: "UNIVERSAL",
@@ -17,6 +18,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "summer-mcintosh",
     name: "Summer McIntosh",
+    nameRu: "Саммер Макинтош",
     country: "CAN",
     gender: "F",
     archetype: "UNIVERSAL",
@@ -30,6 +32,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "katie-ledecky",
     name: "Katie Ledecky",
+    nameRu: "Кэти Ледеки",
     country: "USA",
     gender: "F",
     archetype: "DISTANCE",
@@ -43,6 +46,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "kaylee-mckeown",
     name: "Kaylee McKeown",
+    nameRu: "Кейли Маккеун",
     country: "AUS",
     gender: "F",
     archetype: "UNIVERSAL",
@@ -56,6 +60,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "pan-zhanle",
     name: "Pan Zhanle",
+    nameRu: "Пан Чжаньлэ",
     country: "CHN",
     gender: "M",
     archetype: "SPRINT",
@@ -68,6 +73,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "david-popovici",
     name: "David Popovici",
+    nameRu: "Давид Попович",
     country: "ROU",
     gender: "M",
     archetype: "SPRINT",
@@ -80,6 +86,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "mollie-ocallaghan",
     name: "Mollie O'Callaghan",
+    nameRu: "Молли О'Каллахан",
     country: "AUS",
     gender: "F",
     archetype: "SPRINT",
@@ -92,6 +99,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "kristof-milak",
     name: "Kristóf Milák",
+    nameRu: "Криштоф Милак",
     country: "HUN",
     gender: "M",
     archetype: "UNIVERSAL",
@@ -104,6 +112,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "ariarne-titmus",
     name: "Ariarne Titmus",
+    nameRu: "Ариарне Титмус",
     country: "AUS",
     gender: "F",
     archetype: "DISTANCE",
@@ -116,6 +125,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "kate-douglass",
     name: "Kate Douglass",
+    nameRu: "Кейт Дуглас",
     country: "USA",
     gender: "F",
     archetype: "UNIVERSAL",
@@ -129,6 +139,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "regan-smith",
     name: "Regan Smith",
+    nameRu: "Риган Смит",
     country: "USA",
     gender: "F",
     archetype: "UNIVERSAL",
@@ -141,6 +152,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "sarah-sjostrom",
     name: "Sarah Sjöström",
+    nameRu: "Сара Шёстрём",
     country: "SWE",
     gender: "F",
     archetype: "SPRINT",
@@ -153,6 +165,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "bobby-finke",
     name: "Bobby Finke",
+    nameRu: "Бобби Финк",
     country: "USA",
     gender: "M",
     archetype: "DISTANCE",
@@ -165,6 +178,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "daniel-wiffen",
     name: "Daniel Wiffen",
+    nameRu: "Дэниел Уиффен",
     country: "IRL",
     gender: "M",
     archetype: "DISTANCE",
@@ -177,6 +191,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "lukas-martens",
     name: "Lukas Märtens",
+    nameRu: "Лукас Мертенс",
     country: "GER",
     gender: "M",
     archetype: "DISTANCE",
@@ -189,6 +204,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "thomas-ceccon",
     name: "Thomas Ceccon",
+    nameRu: "Томас Чеккон",
     country: "ITA",
     gender: "M",
     archetype: "UNIVERSAL",
@@ -201,6 +217,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "torri-huske",
     name: "Torri Huske",
+    nameRu: "Торри Хаски",
     country: "USA",
     gender: "F",
     archetype: "SPRINT",
@@ -213,6 +230,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "siobhan-haughey",
     name: "Siobhán Haughey",
+    nameRu: "Шивон Хоги",
     country: "HKG",
     gender: "F",
     archetype: "UNIVERSAL",
@@ -225,6 +243,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "adam-peaty",
     name: "Adam Peaty",
+    nameRu: "Адам Пити",
     country: "GBR",
     gender: "M",
     archetype: "SPRINT",
@@ -237,6 +256,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "tatjana-smith",
     name: "Tatjana Smith",
+    nameRu: "Татьяна Смит",
     country: "RSA",
     gender: "F",
     archetype: "SPRINT",
@@ -249,6 +269,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "yufei-zhang",
     name: "Zhang Yufei",
+    nameRu: "Чжан Юйфэй",
     country: "CHN",
     gender: "F",
     archetype: "UNIVERSAL",
@@ -261,6 +282,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "nicolo-martinenghi",
     name: "Nicolò Martinenghi",
+    nameRu: "Николо Мартиненги",
     country: "ITA",
     gender: "M",
     archetype: "SPRINT",
@@ -273,6 +295,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "gregorio-paltrinieri",
     name: "Gregorio Paltrinieri",
+    nameRu: "Грегорио Пальтриньери",
     country: "ITA",
     gender: "M",
     archetype: "DISTANCE",
@@ -285,6 +308,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "maxime-grousset",
     name: "Maxime Grousset",
+    nameRu: "Максим Груссе",
     country: "FRA",
     gender: "M",
     archetype: "SPRINT",
@@ -297,6 +321,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "hubert-kos",
     name: "Hubert Kós",
+    nameRu: "Хуберт Кош",
     country: "HUN",
     gender: "M",
     archetype: "OTHER",
@@ -309,6 +334,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "sam-short",
     name: "Sam Short",
+    nameRu: "Сэм Шорт",
     country: "AUS",
     gender: "M",
     archetype: "DISTANCE",
@@ -321,6 +347,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "marrit-steenbergen",
     name: "Marrit Steenbergen",
+    nameRu: "Маррит Стенберген",
     country: "NED",
     gender: "F",
     archetype: "UNIVERSAL",
@@ -334,6 +361,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "erika-fairweather",
     name: "Erika Fairweather",
+    nameRu: "Эрика Фэйрвезер",
     country: "NZL",
     gender: "F",
     archetype: "DISTANCE",
@@ -346,6 +374,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "anastasia-gorbenko",
     name: "Anastasia Gorbenko",
+    nameRu: "Анастасия Горбенко",
     country: "ISR",
     gender: "F",
     archetype: "UNIVERSAL",
@@ -358,6 +387,7 @@ export const swimmers: Swimmer[] = [
   {
     id: "angharad-evans",
     name: "Angharad Evans",
+    nameRu: "Ангарад Эванс",
     country: "GBR",
     gender: "F",
     archetype: "SPRINT",
@@ -372,6 +402,10 @@ export const swimmers: Swimmer[] = [
 
 export function getSwimmer(id: string): Swimmer | undefined {
   return swimmers.find((s) => s.id === id);
+}
+
+export function getSwimmerName(swimmer: Swimmer, lang: "en" | "ru"): string {
+  return lang === "ru" ? swimmer.nameRu : swimmer.name;
 }
 
 export function getSwimmerPrice(swimmer: Swimmer): number {
