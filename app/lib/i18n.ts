@@ -124,8 +124,7 @@ type DictShape = {
   onb1Text: string;
   onb2Title: string;
   onb2Text: string;
-  onb3Title: string;
-  onb3Text: string;
+  onbNext: string;
   onbStart: string;
   onbSkip: string;
 };
@@ -251,12 +250,11 @@ export const dictionary: Record<Lang, DictShape> = {
     captainModeText: "Their points double (×2). Tap any swimmer.",
     captainModeChange: "Change captain",
     pickCaptainHint: "Tap a swimmer to make captain",
-    onb1Title: "Build your team",
-    onb1Text: "Pick 7 swimmers within a 1000 SS budget. Mix sprinters, distance and universal.",
-    onb2Title: "Pick a captain",
-    onb2Text: "Your captain scores ×2 fantasy points. Choose wisely.",
-    onb3Title: "Real-world scoring",
-    onb3Text: "Your team scores from real World Aquatics meets. Climb the leaderboard.",
+    onb1Title: "Build your dream team. Win real meets.",
+    onb1Text: "7 swimmers within 1000 SS. Captain doubles the points (×2).",
+    onb2Title: "Points come from real swims",
+    onb2Text: "Every World Aquatics start counts — placing, medal and record bonuses included.",
+    onbNext: "Next →",
     onbStart: "Start playing",
     onbSkip: "Skip",
   },
@@ -380,12 +378,11 @@ export const dictionary: Record<Lang, DictShape> = {
     captainModeText: "Его очки удваиваются (×2). Тапни любого пловца.",
     captainModeChange: "Сменить капитана",
     pickCaptainHint: "Тапни пловца, чтобы сделать капитаном",
-    onb1Title: "Собери команду",
-    onb1Text: "Выбери 7 пловцов в бюджет 1000 SS. Микс спринтеров, стайеров и универсалов.",
-    onb2Title: "Назначь капитана",
-    onb2Text: "Очки капитана удваиваются (×2). Выбирай с умом.",
-    onb3Title: "Реальный скоринг",
-    onb3Text: "Очки начисляются по реальным результатам World Aquatics. Поднимайся в таблице.",
+    onb1Title: "Собери свою лучшую команду и побеждай в турнирах",
+    onb1Text: "7 пловцов в бюджет 1000 SS. Капитан удваивает очки ×2.",
+    onb2Title: "Очки — по реальным заплывам",
+    onb2Text: "Считается каждый старт World Aquatics: место + бонусы за медали и рекорды.",
+    onbNext: "Дальше →",
     onbStart: "Начать игру",
     onbSkip: "Пропустить",
   },

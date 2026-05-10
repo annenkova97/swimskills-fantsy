@@ -1490,10 +1490,12 @@ img {
 }
 
 .onb-title {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 900;
   color: #fff;
+  line-height: 1.2;
   margin: 0 0 12px;
+  max-width: 320px;
 }
 
 .onb-text {
@@ -1507,19 +1509,31 @@ img {
 .onb-dots {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 4px;
   margin: 18px 0;
 }
 
 .onb-dot {
+  appearance: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 8px 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.onb-dot-pill {
+  display: block;
   width: 7px;
   height: 7px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.18);
-  transition: all 0.2s;
+  transition: width 0.2s, background 0.2s;
 }
 
-.onb-dot.active {
+.onb-dot.active .onb-dot-pill {
   width: 22px;
   background: var(--gold);
 }
