@@ -123,8 +123,8 @@ export function CollectionScreen({ t, lang }: { t: Dict; lang: Lang }) {
           <Sparkles size={42} color="var(--gold)" />
           <p>
             {lang === "ru"
-              ? "Тут будут твои карточки. Открой первый пак выше."
-              : "Your cards will appear here. Open your first pack above."}
+              ? "Тут будут коллекционные карты. Открой первый подарочный пак выше."
+              : "Your collectible cards will appear here. Open your first gift pack above."}
           </p>
         </div>
       ) : (
