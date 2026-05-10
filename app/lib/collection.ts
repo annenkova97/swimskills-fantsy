@@ -44,12 +44,22 @@ export function timeUntilNextPack(now: number = Date.now()): number {
 
 /**
  * Pulls a random swimmer for a pack open, weighted toward higher OVR.
- * Avoids returning a swimmer the user already owns when possible.
+ * Prefers swimmers with a real premium PNG (Nikita's hero cards) until all
+ * of them are collected, so first-time users see the impressive art first.
  */
 export function rollPackSwimmer(ownedIds: string[]): string {
   const unowned = swimmers.filter((s) => !ownedIds.includes(s.id));
+
+  const unownedWithPhoto = unowned.filter((s) => s.photo);
+  if (unownedWithPhoto.length > 0) {
+    return weightedPick(unownedWithPhoto);
+  }
+
   const pool = unowned.length > 0 ? unowned : swimmers;
-  // weight by ovr - 70 (higher OVR more likely)
+  return weightedPick(pool);
+}
+
+function weightedPick(pool: typeof swimmers): string {
   const weights = pool.map((s) => Math.max(1, s.ovr - 70));
   const total = weights.reduce((a, b) => a + b, 0);
   let roll = Math.random() * total;

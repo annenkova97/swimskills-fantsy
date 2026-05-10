@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
-import { Share2, Trophy, Crown, Gift, ChevronLeft } from "lucide-react";
+import { Share2, Trophy, Crown } from "lucide-react";
 import type { Dict, Lang } from "../lib/i18n";
 import type { Team, Tournament } from "../lib/types";
 import { swimmers, getSwimmerName } from "../lib/swimmers";
 import { scoreTeam } from "../lib/scoring";
-import { CollectionScreen } from "./CollectionScreen";
 
 export function ProfileScreen({
   username,
@@ -32,24 +30,6 @@ export function ProfileScreen({
   t: Dict;
   onShare: () => void;
 }) {
-  const [view, setView] = useState<"profile" | "collection">("profile");
-
-  if (view === "collection") {
-    return (
-      <div>
-        <button
-          className="btn btn-ghost"
-          style={{ marginBottom: 14, width: "auto", padding: "8px 14px" }}
-          onClick={() => setView("profile")}
-        >
-          <ChevronLeft size={14} style={{ verticalAlign: "middle", marginRight: 4 }} />
-          {lang === "ru" ? "К профилю" : "Back to profile"}
-        </button>
-        <CollectionScreen t={t} lang={lang} />
-      </div>
-    );
-  }
-
   const score = team ? scoreTeam(team, tournament) : null;
   const monogram = monogramOf(username);
 
@@ -133,15 +113,6 @@ export function ProfileScreen({
           <button className="btn btn-ghost" onClick={onShare} style={{ marginTop: 16 }}>
             <Share2 size={14} style={{ verticalAlign: "middle", marginRight: 6 }} />
             {t.share}
-          </button>
-
-          <button
-            className="btn easter-egg-btn"
-            onClick={() => setView("collection")}
-            style={{ marginTop: 10 }}
-          >
-            <Gift size={14} style={{ verticalAlign: "middle", marginRight: 6 }} />
-            {lang === "ru" ? "Premium-коллекция" : "Premium collection"}
           </button>
         </>
       ) : (

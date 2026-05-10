@@ -7,6 +7,7 @@ type DictShape = {
   tournament: string;
   leaderboard: string;
   catalog: string;
+  collection: string;
   profile: string;
   teamBuilder: string;
   pickASwimmer: string;
@@ -139,6 +140,7 @@ export const dictionary: Record<Lang, DictShape> = {
     tournament: "Tournament",
     leaderboard: "Leaderboard",
     catalog: "Catalog",
+    collection: "Cards",
     profile: "Profile",
     teamBuilder: "Team Builder",
     pickASwimmer: "Pick a swimmer",
@@ -269,6 +271,7 @@ export const dictionary: Record<Lang, DictShape> = {
     tournament: "Турнир",
     leaderboard: "Таблица",
     catalog: "Каталог",
+    collection: "Карты",
     profile: "Профиль",
     teamBuilder: "Сборка команды",
     pickASwimmer: "Выбрать пловца",

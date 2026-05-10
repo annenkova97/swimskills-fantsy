@@ -1,9 +1,9 @@
 "use client";
 
-import { Trophy, Users, BarChart3, User } from "lucide-react";
+import { Trophy, Users, BarChart3, User, Gift } from "lucide-react";
 import type { Dict } from "../lib/i18n";
 
-export type Tab = "tournament" | "team" | "leaderboard" | "profile";
+export type Tab = "tournament" | "collection" | "team" | "leaderboard" | "profile";
 
 export function BottomNav({
   activeTab,
@@ -16,6 +16,7 @@ export function BottomNav({
 }) {
   const items: { tab: Tab; label: string; icon: React.ReactNode }[] = [
     { tab: "tournament", label: t.tournament, icon: <Trophy size={20} strokeWidth={2.5} /> },
+    { tab: "collection", label: t.collection, icon: <Gift size={20} strokeWidth={2.5} /> },
     { tab: "team", label: t.yourTeam, icon: <Users size={20} strokeWidth={2.5} /> },
     { tab: "leaderboard", label: t.leaderboard, icon: <BarChart3 size={20} strokeWidth={2.5} /> },
     { tab: "profile", label: t.profile, icon: <User size={20} strokeWidth={2.5} /> },

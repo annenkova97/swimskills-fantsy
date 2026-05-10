@@ -14,6 +14,7 @@ import { TournamentScreen } from "./components/TournamentScreen";
 import { TeamBuilder, type DraftPicks } from "./components/TeamBuilder";
 import { LeaderboardScreen } from "./components/LeaderboardScreen";
 import { ProfileScreen } from "./components/ProfileScreen";
+import { CollectionScreen } from "./components/CollectionScreen";
 import { BottomSheet } from "./components/BottomSheet";
 import { Onboarding } from "./components/Onboarding";
 
@@ -285,6 +286,8 @@ export default function Home() {
           locked={false}
         />
       )}
+
+      {activeTab === "collection" && <CollectionScreen t={t} lang={lang} />}
 
       {activeTab === "leaderboard" && (
         <LeaderboardScreen entries={leaderboard} tournament={tournament} t={t} />
