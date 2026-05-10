@@ -110,6 +110,8 @@ type DictShape = {
   slotActionTitle: string;
   slotActionReplace: string;
   slotActionRemove: string;
+  editHintTap: string;
+  editHintDeadline: string;
   unsavedTitle: string;
   unsavedText: string;
   saveAndLeave: string;
@@ -241,6 +243,8 @@ export const dictionary: Record<Lang, DictShape> = {
     slotActionTitle: "Slot action",
     slotActionReplace: "Replace swimmer",
     slotActionRemove: "Remove from team",
+    editHintTap: "Tap a card to replace or remove a swimmer.",
+    editHintDeadline: "Roster locks 2 hours before the tournament starts.",
     unsavedTitle: "Unsaved changes",
     unsavedText: "You have unsaved changes to your team.",
     saveAndLeave: "Save",
@@ -369,6 +373,8 @@ export const dictionary: Record<Lang, DictShape> = {
     slotActionTitle: "Что делаем со слотом?",
     slotActionReplace: "Заменить пловца",
     slotActionRemove: "Убрать из команды",
+    editHintTap: "Тапни по карточке, чтобы заменить или убрать пловца.",
+    editHintDeadline: "Состав замораживается за 2 часа до старта турнира.",
     unsavedTitle: "Несохранённые изменения",
     unsavedText: "Изменения в команде ещё не сохранены.",
     saveAndLeave: "Сохранить",

@@ -17,12 +17,14 @@ export function BottomSheet({
   actions,
   onClose,
   t,
+  compact = false,
 }: {
-  title: string;
+  title?: string;
   text?: string;
   actions: SheetAction[];
   onClose: () => void;
   t: Dict;
+  compact?: boolean;
 }) {
   useTelegramBackButton(onClose);
 
@@ -34,16 +36,18 @@ export function BottomSheet({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  const headerless = !title && !text;
+
   return (
-    <div className="sheet-backdrop" onClick={onClose}>
+    <div className={`sheet-backdrop ${compact ? "compact" : ""}`} onClick={onClose}>
       <div
-        className="sheet-panel"
+        className={`sheet-panel ${compact ? "compact" : ""} ${headerless ? "headerless" : ""}`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
       >
         <div className="sheet-grabber" />
-        <h3 className="sheet-title">{title}</h3>
+        {title && <h3 className="sheet-title">{title}</h3>}
         {text && <p className="sheet-text">{text}</p>}
 
         <div className="sheet-actions">

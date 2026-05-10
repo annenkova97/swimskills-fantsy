@@ -229,6 +229,14 @@ export function TeamBuilder({
           >
             {!isDirty && isSaved ? t.saved : t.saveAction}
           </button>
+
+          {filledCount > 0 && (
+            <p className="team-hint">
+              {t.editHintTap}
+              <br />
+              {t.editHintDeadline}
+            </p>
+          )}
         </>
       )}
 
@@ -264,7 +272,7 @@ export function TeamBuilder({
 
       {slotSheet && (
         <BottomSheet
-          title={t.slotActionTitle}
+          compact
           actions={[
             {
               key: "replace",

@@ -1216,6 +1216,11 @@ img {
   animation: sheet-fade 0.18s ease-out;
 }
 
+.sheet-backdrop.compact {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(1.5px);
+}
+
 @keyframes sheet-fade {
   from {
     opacity: 0;
@@ -1234,6 +1239,14 @@ img {
   padding: 14px 16px calc(20px + env(safe-area-inset-bottom, 0));
   box-shadow: 0 -20px 48px rgba(0, 0, 0, 0.6);
   animation: sheet-slide 0.22s cubic-bezier(0.18, 0.89, 0.32, 1.15);
+}
+
+.sheet-panel.compact {
+  padding: 10px 14px calc(14px + env(safe-area-inset-bottom, 0));
+}
+
+.sheet-panel.headerless .sheet-grabber {
+  margin-bottom: 10px;
 }
 
 @keyframes sheet-slide {
@@ -1284,6 +1297,16 @@ img {
   background: var(--panel-2);
   color: #fff;
   text-align: center;
+}
+
+.sheet-panel.compact .sheet-btn {
+  padding: 12px;
+  font-size: 14px;
+  border-radius: 12px;
+}
+
+.sheet-panel.compact .sheet-actions {
+  gap: 6px;
 }
 
 .sheet-btn.primary {
@@ -1413,6 +1436,14 @@ img {
   font-size: 10px;
   font-weight: 900;
   box-shadow: 0 2px 8px rgba(255, 204, 0, 0.4);
+}
+
+.team-hint {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+  text-align: center;
 }
 
 /* ====== Onboarding ====== */
